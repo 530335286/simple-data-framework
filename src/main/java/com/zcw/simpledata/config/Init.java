@@ -23,6 +23,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/***
+ * simple-data
+ * @author zcw
+ * @version 0.0.1
+ */
+
 @Component
 public class Init {
 

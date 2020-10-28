@@ -1,5 +1,11 @@
 package com.zcw.simpledata.config;
 
+/***
+ * simple-data
+ * @author zcw
+ * @version 0.0.1
+ */
+
 public class SqlTable {
     private String fieldName;
     private String fieldType;
