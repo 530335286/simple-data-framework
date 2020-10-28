@@ -18,6 +18,7 @@ import com.zcw.simpledata.base.exceptions.NullException;
 import com.zcw.simpledata.base.mapper.ClassMapper;
 import com.zcw.simpledata.config.Init;
 import lombok.SneakyThrows;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -38,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 
 @RestController
+@Log4j2
 public class BaseController<T, D> {
     private Class entityClass;
     private Class dtoClass;
@@ -268,6 +270,7 @@ public class BaseController<T, D> {
                 sql = "insert into " + this.tableName + "(" + fieldAndValue[0] + ") " + fieldAndValue[1];
                 break;
         }
+        log.info("执行的SQL:" + sql);
         return sql;
     }
 
