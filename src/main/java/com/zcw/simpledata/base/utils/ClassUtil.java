@@ -31,6 +31,7 @@ public class ClassUtil {
             Class<?> aClass = Class.forName(packageName + name);
             if (aClass.isAnnotationPresent(EnableSimpleData.class)) {
                 Init.version = aClass.getAnnotation(EnableSimpleData.class).version();
+                Init.mainClassName=aClass.getName();
                 return aClass.getAnnotation(EnableSimpleData.class).initClass();
             }
         } catch (Exception e) {

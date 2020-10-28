@@ -60,7 +60,6 @@ public class BaseController<T, D> {
         this.dtoClass = dto;
         this.tableName = this.humpToUnderline(this.entityClass.getSimpleName()).toLowerCase();
         this.classMapper = new ClassMapper(this.entityClass, this.dtoClass);
-        System.out.println((T) entityClass.newInstance());
         this.isExtends = (T) entityClass.newInstance() instanceof BaseEntity;
         for (Field field : entity.getDeclaredFields()) {
             if (field.isAnnotationPresent(Id.class)) {
@@ -222,8 +221,11 @@ public class BaseController<T, D> {
                 break;
             case 5:
                 Long begin = (pageQO.getCurrent() - 1L) * pageQO.getPageSize();
-                sql = "select * from " + this.tableName + " limit " + begin + "," + pageQO.getPageSize();
-                sql = isDelete(sql);
+                sql = "select * from " + this.tableName;
+                if (isExtends) {
+                    sql += " where deleted = false";
+                }
+                sql += " limit " + begin + "," + pageQO.getPageSize();
                 break;
             case 6:
                 sql = "select * from " + this.tableName + " where " + idName + " = " + id;
