@@ -62,7 +62,7 @@ public class BaseController<T, D> {
     private String humpToUnderline(String para) {
         StringBuilder sb = new StringBuilder(para);
         int temp = 0;
-        if (!para.contains("_")) {
+        if (!para.contains(UNDERLINE)) {
             for (int i = 1; i < para.length(); ++i) {
                 if (Character.isUpperCase(para.charAt(i))) {
                     sb.insert(i + temp, UNDERLINE);
