@@ -196,11 +196,16 @@ public class BaseController<T, D> {
         return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
 
+    @SneakyThrows
     @DeleteMapping(value = "/delete/false/{id}")
     public ResponseEntity deleteFalse(@PathVariable Long id) {
-        String sql = this.generateSql(SqlEnum.DeleteFalse, null, id, null);
-        int result = this.jdbcTemplate.update(sql);
-        return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+        if ((T) entityClass.newInstance() instanceof BaseEntity) {
+            String sql = this.generateSql(SqlEnum.DeleteFalse, null, id, null);
+            int result = this.jdbcTemplate.update(sql);
+            return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+        } else {
+            return ResponseEntity.ok("实体未继承BaseEntity");
+        }
     }
 
     @DeleteMapping(value = "/delete/true/{id}")
@@ -257,18 +262,28 @@ public class BaseController<T, D> {
         return ResponseEntity.ok(pageVO);
     }
 
+    @SneakyThrows
     @PatchMapping(value = "/disable/{id}")
     public ResponseEntity disable(@PathVariable Long id) {
-        String sql = this.generateSql(SqlEnum.Disable, null, id, null);
-        int result = this.jdbcTemplate.update(sql);
-        return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+        if ((T) entityClass.newInstance() instanceof BaseEntity) {
+            String sql = this.generateSql(SqlEnum.Disable, null, id, null);
+            int result = this.jdbcTemplate.update(sql);
+            return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+        } else {
+            return ResponseEntity.ok("实体未继承BaseEntity");
+        }
     }
 
+    @SneakyThrows
     @PatchMapping(value = "/enable/{id}")
     public ResponseEntity enable(@PathVariable Long id) {
-        String sql = this.generateSql(SqlEnum.Enable, null, id, null);
-        int result = this.jdbcTemplate.update(sql);
-        return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+        if ((T) entityClass.newInstance() instanceof BaseEntity) {
+            String sql = this.generateSql(SqlEnum.Enable, null, id, null);
+            int result = this.jdbcTemplate.update(sql);
+            return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+        } else {
+            return ResponseEntity.ok("实体未继承BaseEntity");
+        }
     }
 
     @GetMapping(value = "/queryCount")
@@ -294,12 +309,17 @@ public class BaseController<T, D> {
         return ResponseEntity.ok().build();
     }
 
+    @SneakyThrows
     @DeleteMapping(value = "/batchDelete/false")
     public ResponseEntity batchDeleteFalse(@RequestBody List<Long> idList) {
-        for (Long id : idList) {
-            deleteFalse(id);
+        if ((T) entityClass.newInstance() instanceof BaseEntity) {
+            for (Long id : idList) {
+                deleteFalse(id);
+            }
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.ok("实体未继承BaseEntity");
         }
-        return ResponseEntity.ok().build();
     }
 
     @PutMapping(value = "/batchUpdate")
