@@ -84,17 +84,17 @@ public class Init {
             return;
         }
         if(!environment.containsProperty(entityPackageName)){
-            System.err.println("请配置实体类包路径:com.xxx.xxx");
+            System.err.println("请配置实体类包路径:xxx.xxx.xxx");
             log.error("请配置实体类包路径:xxx.xxx.xxx");
             return;
         }
         if(!environment.containsProperty(voPackageName)){
-            System.err.println("请配置vo包路径:com.xxx.xxx");
+            System.err.println("请配置vo包路径:xxx.xxx.xxx");
             log.error("请配置vo包路径:xxx.xxx.xxx");
             return;
         }
         if(!environment.containsProperty(controllerPackageName)){
-            System.err.println("请配置controller包路径:com.xxx.xxx");
+            System.err.println("请配置controller包路径:xxx.xxx.xxx");
             log.error("请配置controller包路径:xxx.xxx.xxx");
             return;
         }
