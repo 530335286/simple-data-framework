@@ -73,6 +73,42 @@ public class Init {
         return sb.toString();
     }
 
+    private void errLog(boolean isEntity, boolean isVo, boolean isController) {
+        if (isEntity && isVo && isController) {
+            return;
+        }
+        if (!isEntity && !isVo && !isController) {
+            log.error("请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
+            log.error("请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
+            log.error("请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
+            return;
+        }
+        if (!isEntity && !isVo) {
+            log.error("请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
+            log.error("请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
+            return;
+        }
+        if (!isVo && !isController) {
+            log.error("请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
+            log.error("请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
+            return;
+        }
+        if (!isEntity && !isController) {
+            log.error("请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
+            log.error("请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
+            return;
+        }
+        if (!isEntity) {
+            log.error("请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
+            return;
+        }
+        if (!isVo) {
+            log.error("请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
+            return;
+        }
+        log.error("请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
+        return;
+    }
 
     @SneakyThrows
     @PostConstruct
@@ -83,15 +119,10 @@ public class Init {
         if (!isInit) {
             return;
         }
-        if (!environment.containsProperty(entityPackageName) || !environment.containsProperty(voPackageName) || !environment.containsProperty(controllerPackageName)) {
-            System.err.println("请配置实体类包路径:com.zcw.simple-data.entity-package:xxx.xxx.xxx");
-            log.error("请配置实体类包路径:com.zcw.simple-data.entity-package:xxx.xxx.xxx");
-            System.err.println("请配置vo包路径:com.zcw.simple-data.vo-package:xxx.xxx.xxx");
-            log.error("请配置vo包路径:com.zcw.simple-data.vo-package:xxx.xxx.xxx");
-            System.err.println("请配置controller包路径:com.zcw.simple-data.controller-package:xxx.xxx.xxx");
-            log.error("请配置controller包路径:com.zcw.simple-data.controller-package:xxx.xxx.xxx");
-            return;
-        }
+        boolean isEntity = environment.containsProperty(entityPackageName);
+        boolean isVo = environment.containsProperty(voPackageName);
+        boolean isController = environment.containsProperty(controllerPackageName);
+        errLog(isEntity, isVo, isController);
         entityPackage = environment.getProperty(entityPackageName);
         voPackage = environment.getProperty(voPackageName);
         controllerPackage = environment.getProperty(controllerPackageName);
