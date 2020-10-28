@@ -39,6 +39,8 @@ public class Init {
 
     private static String idName = null;
 
+    private static boolean flag = true;
+
     @Value("${entity-package}")
     private String entityPackage;
 
@@ -83,7 +85,10 @@ public class Init {
                         sqlTable.setFieldName(resultSet.getString("Field"));
                         sqlTable.setFieldType(resultSet.getString("Type"));
                         if (resultSet.getString("Key").equals("PRI")) {
-                            idName = resultSet.getString("Field");
+                            if (flag) {
+                                idName = resultSet.getString("Field");
+                                flag = false;
+                            }
                         }
                         return sqlTable;
                     }
@@ -93,6 +98,7 @@ public class Init {
                 tableAndId.setIdName(lineToHump(idName));
                 tableInfo.put(tableAndId, sqlTables);
             }
+            flag = true;
         });
         for (Map.Entry<TableAndId, List<SqlTable>> entry : tableInfo.entrySet()) {
             generateEntity(entry);
