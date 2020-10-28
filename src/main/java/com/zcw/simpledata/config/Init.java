@@ -1,8 +1,12 @@
 package com.zcw.simpledata.config;
 
+import com.zcw.simpledata.base.utils.ClassUtil;
 import lombok.SneakyThrows;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -14,6 +18,7 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.FileWriter;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.ResultSet;
@@ -30,10 +35,14 @@ import java.util.stream.Collectors;
  */
 
 @Component
+@Log4j2
 public class Init {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private Environment environment;
 
     private static Pattern linePattern = Pattern.compile("_(\\w)");
 
@@ -41,13 +50,14 @@ public class Init {
 
     private static boolean flag = true;
 
-    @Value("${entity-package}")
+    private static final String entityPackageName = "com.zcw.simple-data.entity-package";
+    private static final String voPackageName = "com.zcw.simple-data.vo-package";
+    private static final String controllerPackageName = "com.zcw.simple-data.controller-package";
+
     private String entityPackage;
 
-    @Value("${vo-package}")
     private String voPackage;
 
-    @Value("${controller-package}")
     private String controllerPackage;
 
     private List<String> baseFields = new ArrayList();
@@ -67,6 +77,30 @@ public class Init {
     @SneakyThrows
     @PostConstruct
     public void initClass() {
+        String path = System.getProperty("user.dir") + "/src/main/java/";
+        File file = new File(path);
+        boolean isInit = ClassUtil.loop(file, "");
+        if (!isInit) {
+            return;
+        }
+        if(!environment.containsProperty(entityPackageName)){
+            System.err.println("请配置实体类包路径:com.xxx.xxx");
+            log.error("请配置实体类包路径:com.xxx.xxx");
+            return;
+        }
+        if(!environment.containsProperty(voPackageName)){
+            System.err.println("请配置vo包路径:com.xxx.xxx");
+            log.error("请配置vo包路径:com.xxx.xxx");
+            return;
+        }
+        if(!environment.containsProperty(controllerPackageName)){
+            System.err.println("请配置controller包路径:com.xxx.xxx");
+            log.error("请配置controller包路径:com.xxx.xxx");
+            return;
+        }
+        entityPackage = environment.getProperty(entityPackageName);
+        voPackage = environment.getProperty(voPackageName);
+        controllerPackage = environment.getProperty(controllerPackageName);
         Map<TableAndId, List<SqlTable>> tableInfo = new HashMap();
         baseFields.add("createdAt");
         baseFields.add("updatedAt");

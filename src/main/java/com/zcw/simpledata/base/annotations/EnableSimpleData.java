@@ -19,6 +19,10 @@ import org.springframework.context.annotation.Import;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Import({FrameConfig.class})
-public @interface OpenConfig {
-
+public @interface EnableSimpleData {
+    /**
+     * 是否生成基础类
+     * @return
+     */
+    boolean initClass() default false;
 }
