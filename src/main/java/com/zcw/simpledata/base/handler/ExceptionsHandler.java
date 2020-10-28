@@ -15,21 +15,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @ControllerAdvice
 @Log4j2
-public class ExceptionsHandler {
+public abstract class ExceptionsHandler {
 
     @ResponseBody
     @ExceptionHandler({Throwable.class})
-    public ResponseEntity doException(Throwable throwable) {
-        throwable.printStackTrace();
-        log.error(throwable.getMessage());
-        return ResponseEntity.badRequest().build();
-    }
+    public abstract ResponseEntity doException(Throwable throwable);
 
     @ResponseBody
     @ExceptionHandler({ApiException.class})
-    public ResponseEntity doApiException(ApiException apiException) {
-        apiException.printStackTrace();
-        log.error(apiException.getMessage());
-        return ResponseEntity.status(apiException.getCode()).build();
-    }
+    public abstract ResponseEntity doApiException(ApiException apiException);
 }
