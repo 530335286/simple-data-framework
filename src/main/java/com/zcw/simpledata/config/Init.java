@@ -83,19 +83,13 @@ public class Init {
         if (!isInit) {
             return;
         }
-        if(!environment.containsProperty(entityPackageName)){
-            System.err.println("请配置实体类包路径:xxx.xxx.xxx");
-            log.error("请配置实体类包路径:xxx.xxx.xxx");
-            return;
-        }
-        if(!environment.containsProperty(voPackageName)){
-            System.err.println("请配置vo包路径:xxx.xxx.xxx");
-            log.error("请配置vo包路径:xxx.xxx.xxx");
-            return;
-        }
-        if(!environment.containsProperty(controllerPackageName)){
-            System.err.println("请配置controller包路径:xxx.xxx.xxx");
-            log.error("请配置controller包路径:xxx.xxx.xxx");
+        if (!environment.containsProperty(entityPackageName) || !environment.containsProperty(voPackageName) || !environment.containsProperty(controllerPackageName)) {
+            System.err.println("请配置实体类包路径:com.zcw.simple-data.entity-package:xxx.xxx.xxx");
+            log.error("请配置实体类包路径:com.zcw.simple-data.entity-package:xxx.xxx.xxx");
+            System.err.println("请配置vo包路径:com.zcw.simple-data.vo-package:xxx.xxx.xxx");
+            log.error("请配置vo包路径:com.zcw.simple-data.vo-package:xxx.xxx.xxx");
+            System.err.println("请配置controller包路径:com.zcw.simple-data.controller-package:xxx.xxx.xxx");
+            log.error("请配置controller包路径:com.zcw.simple-data.controller-package:xxx.xxx.xxx");
             return;
         }
         entityPackage = environment.getProperty(entityPackageName);
