@@ -107,7 +107,6 @@ public class Init {
             return;
         }
         log.error("请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
-        return;
     }
 
     @SneakyThrows
