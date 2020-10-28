@@ -39,6 +39,7 @@ public class BaseController<T, D> {
     private Class dtoClass;
     private String tableName;
     private String idName;
+    private String id;
     private ClassMapper<T, D> classMapper;
     private static final String UNDERLINE = "_";
 
@@ -55,7 +56,8 @@ public class BaseController<T, D> {
         this.classMapper = new ClassMapper(this.entityClass, this.dtoClass);
         for (Field field : entity.getDeclaredFields()) {
             if (field.isAnnotationPresent(Id.class)) {
-                this.idName = humpToUnderline(field.getName());
+                this.id = field.getName();
+                this.idName = humpToUnderline(this.id);
             }
         }
     }
@@ -227,7 +229,7 @@ public class BaseController<T, D> {
     public ResponseEntity update(@RequestBody D vo) {
         T entity = this.classMapper.voTOEntity(vo);
         String idName = this.idName.substring(0, 1).toUpperCase() + this.idName.substring(1);
-        Method method = this.entityClass.getMethod("get" + idName, (Class[]) null);
+        Method method = this.entityClass.getMethod("get" + this.id, (Class[]) null);
         Long id = (Long) method.invoke(entity, (Object[]) null);
         List<T> entityList = new ArrayList();
         entityList.add(entity);
