@@ -301,4 +301,12 @@ public class BaseController<T, D> {
         }
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping(value = "/batchUpdate")
+    public ResponseEntity batchUpdate(@RequestBody List<D> voList) {
+        for (D vo : voList) {
+            update(vo);
+        }
+        return ResponseEntity.ok().build();
+    }
 }
