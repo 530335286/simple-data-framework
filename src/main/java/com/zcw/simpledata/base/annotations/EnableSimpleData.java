@@ -25,4 +25,10 @@ public @interface EnableSimpleData {
      * @return
      */
     boolean initClass() default false;
+
+    /**
+     * 是否开启乐观锁支持
+     * @return
+     */
+    boolean version() default false;
 }

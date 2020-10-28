@@ -11,7 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 
 @SpringBootApplication
-@EnableSimpleData(initClass = true)
+@EnableSimpleData(initClass = true,version = true)
 public class SimpleDataApplication {
 
     public static void main(String[] args) {

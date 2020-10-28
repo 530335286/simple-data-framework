@@ -1,5 +1,6 @@
 package com.zcw.simpledata.config;
 
+import com.zcw.simpledata.base.exceptions.LoopException;
 import com.zcw.simpledata.base.utils.ClassUtil;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
@@ -43,6 +44,8 @@ public class Init {
 
     @Autowired
     private Environment environment;
+
+    public static boolean version = false;
 
     private static Pattern linePattern = Pattern.compile("_(\\w)");
 
@@ -109,12 +112,18 @@ public class Init {
         log.error("请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
     }
 
-    @SneakyThrows
     @PostConstruct
     public void initClass() {
         String path = System.getProperty("user.dir") + "/src/main/java/";
         File file = new File(path);
-        boolean isInit = ClassUtil.loop(file, "");
+        boolean isInit = false;
+        try {
+            isInit = ClassUtil.loop(file, "");
+        } catch (LoopException loopException) {
+            isInit = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         if (!isInit) {
             return;
         }

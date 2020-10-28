@@ -12,7 +12,11 @@ import com.zcw.simpledata.base.entity.BaseEntity;
 import com.zcw.simpledata.base.entity.qo.PageQO;
 import com.zcw.simpledata.base.entity.vo.PageVO;
 import com.zcw.simpledata.base.enums.SqlEnum;
+import com.zcw.simpledata.base.exceptions.ApiException;
+import com.zcw.simpledata.base.exceptions.ExtendsException;
+import com.zcw.simpledata.base.exceptions.NullException;
 import com.zcw.simpledata.base.mapper.ClassMapper;
+import com.zcw.simpledata.config.Init;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +46,7 @@ public class BaseController<T, D> {
     private String id;
     private ClassMapper<T, D> classMapper;
     private static final String UNDERLINE = "_";
+    private boolean isExtends = false;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -49,11 +54,14 @@ public class BaseController<T, D> {
     private BaseController() {
     }
 
+    @SneakyThrows
     public BaseController(Class entity, Class dto) {
         this.entityClass = entity;
         this.dtoClass = dto;
         this.tableName = this.humpToUnderline(this.entityClass.getSimpleName()).toLowerCase();
         this.classMapper = new ClassMapper(this.entityClass, this.dtoClass);
+        System.out.println((T) entityClass.newInstance());
+        this.isExtends = (T) entityClass.newInstance() instanceof BaseEntity;
         for (Field field : entity.getDeclaredFields()) {
             if (field.isAnnotationPresent(Id.class)) {
                 this.id = field.getName();
@@ -92,7 +100,7 @@ public class BaseController<T, D> {
     @SneakyThrows
     private String[] generateField(List<T> valueList) {
         Field[] fields = this.entityClass.getDeclaredFields();
-        if (valueList.get(0) instanceof BaseEntity) {
+        if (isExtends) {
             fields = this.concat(fields, BaseEntity.class.getDeclaredFields());
         }
         String fieldLine = "";
@@ -132,7 +140,7 @@ public class BaseController<T, D> {
     @SneakyThrows
     private String forUpdateSql(T value) {
         Field[] fields = this.entityClass.getDeclaredFields();
-        if (value instanceof BaseEntity) {
+        if (isExtends) {
             fields = this.concat(fields, BaseEntity.class.getDeclaredFields());
         }
         String sql = "";
@@ -156,6 +164,25 @@ public class BaseController<T, D> {
         return sql;
     }
 
+    @SneakyThrows
+    private String updateVersion(String sql, Long id) {
+        T entity = classMapper.voTOEntity(queryById(id).getBody());
+        if (null == entity) {
+            throw new NullException("查找不到此实体");
+        }
+        Method method = entityClass.getMethod("getVersion", null);
+        Long version = (Long) method.invoke(entity, null);
+        sql += " and version = " + version;
+        return sql;
+    }
+
+    private String isDelete(String sql) {
+        if (isExtends) {
+            sql += " and deleted = false";
+        }
+        return sql;
+    }
+
     private String generateSql(SqlEnum sqlEnum, List<T> value, Long id, PageQO pageQO) {
         String sql = "";
         switch (sqlEnum.getSqlType().intValue()) {
@@ -164,34 +191,81 @@ public class BaseController<T, D> {
                 sql = "insert into " + this.tableName + "(" + fieldAndValue[0] + ") " + fieldAndValue[1];
                 break;
             case 2:
-                sql = "update " + this.tableName + " set deleted = true where " + idName + " = " + id;
+                if (Init.version) {
+                    if (isExtends) {
+                        sql = "update " + this.tableName + " set deleted = true , version = version + 1 where " + idName + " = " + id;
+                        sql = updateVersion(sql, id);
+                    } else {
+                        throw new ExtendsException("乐观锁只支持BaseEntity类型");
+                    }
+                } else {
+                    sql = "update " + this.tableName + " set deleted = true where " + idName + " = " + id;
+                }
+                sql = isDelete(sql);
                 break;
             case 3:
                 sql = "delete from " + this.tableName + " where " + idName + " = " + id;
+                sql = isDelete(sql);
                 break;
             case 4:
-                sql = "update " + this.tableName + " set " + this.forUpdateSql(value.get(0)) + " where " + idName + " = " + id;
+                if (Init.version) {
+                    if (isExtends) {
+                        sql = "update " + this.tableName + " set " + this.forUpdateSql(value.get(0)) + ", version = version +1 where " + idName + " = " + id;
+                        sql = updateVersion(sql, id);
+                    } else {
+                        throw new ExtendsException("乐观锁只支持BaseEntity类型");
+                    }
+                } else {
+                    sql = "update " + this.tableName + " set " + this.forUpdateSql(value.get(0)) + " where " + idName + " = " + id;
+                }
+                sql = isDelete(sql);
                 break;
             case 5:
                 Long begin = (pageQO.getCurrent() - 1L) * pageQO.getPageSize();
                 sql = "select * from " + this.tableName + " limit " + begin + "," + pageQO.getPageSize();
+                sql = isDelete(sql);
                 break;
             case 6:
                 sql = "select * from " + this.tableName + " where " + idName + " = " + id;
+                sql = isDelete(sql);
                 break;
             case 7:
-                sql = "update " + this.tableName + " set disabled = true where " + idName + " = " + id;
+                if (Init.version) {
+                    if (isExtends) {
+                        sql = "update " + this.tableName + " set disabled = true,version = version + 1 where " + idName + " = " + id;
+                        sql = updateVersion(sql, id);
+                    } else {
+                        throw new ExtendsException("乐观锁只支持BaseEntity类型");
+                    }
+                } else {
+                    sql = "update " + this.tableName + " set disabled = true where " + idName + " = " + id;
+                }
+                sql = isDelete(sql);
                 break;
             case 8:
-                sql = "update " + this.tableName + " set disabled = false where " + idName + " = " + id;
+                if (Init.version) {
+                    if (isExtends) {
+                        sql = "update " + this.tableName + " set disabled = false,version = version + 1 where " + idName + " = " + id;
+                        sql = updateVersion(sql, id);
+                    } else {
+                        throw new ExtendsException("乐观锁只支持BaseEntity类型");
+                    }
+                } else {
+                    sql = "update " + this.tableName + " set disabled = false where " + idName + " = " + id;
+                }
+                sql = isDelete(sql);
                 break;
             case 9:
                 sql = "select count(1) from " + this.tableName;
+                if (isExtends) {
+                    sql += " where deleted = false";
+                }
+                break;
             case 10:
                 fieldAndValue = this.generateField(value);
                 sql = "insert into " + this.tableName + "(" + fieldAndValue[0] + ") " + fieldAndValue[1];
+                break;
         }
-
         return sql;
     }
 
@@ -208,7 +282,7 @@ public class BaseController<T, D> {
     @SneakyThrows
     @DeleteMapping(value = "/delete/false/{id}")
     public ResponseEntity deleteFalse(@PathVariable Long id) {
-        if ((T) entityClass.newInstance() instanceof BaseEntity) {
+        if (isExtends) {
             String sql = this.generateSql(SqlEnum.DeleteFalse, null, id, null);
             int result = this.jdbcTemplate.update(sql);
             return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
@@ -275,7 +349,7 @@ public class BaseController<T, D> {
     @SneakyThrows
     @PatchMapping(value = "/disable/{id}")
     public ResponseEntity disable(@PathVariable Long id) {
-        if ((T) entityClass.newInstance() instanceof BaseEntity) {
+        if (isExtends) {
             String sql = this.generateSql(SqlEnum.Disable, null, id, null);
             int result = this.jdbcTemplate.update(sql);
             return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
@@ -287,7 +361,7 @@ public class BaseController<T, D> {
     @SneakyThrows
     @PatchMapping(value = "/enable/{id}")
     public ResponseEntity enable(@PathVariable Long id) {
-        if ((T) entityClass.newInstance() instanceof BaseEntity) {
+        if (isExtends) {
             String sql = this.generateSql(SqlEnum.Enable, null, id, null);
             int result = this.jdbcTemplate.update(sql);
             return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
@@ -322,7 +396,7 @@ public class BaseController<T, D> {
     @SneakyThrows
     @DeleteMapping(value = "/batchDelete/false")
     public ResponseEntity batchDeleteFalse(@RequestBody List<Long> idList) {
-        if ((T) entityClass.newInstance() instanceof BaseEntity) {
+        if (isExtends) {
             for (Long id : idList) {
                 deleteFalse(id);
             }
