@@ -24,6 +24,9 @@ public class SqlTable {
             case "bit":
                 fieldType = "boolean";
                 break;
+            case "id":
+                fieldType = "long";
+                break;
             default:
                 fieldType = "String";
                 break;

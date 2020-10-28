@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.zcw.simpledata.base.annotations.Id;
 import com.zcw.simpledata.base.entity.BaseEntity;
 import com.zcw.simpledata.base.entity.qo.PageQO;
 import com.zcw.simpledata.base.entity.vo.PageVO;
@@ -37,6 +38,7 @@ public class BaseController<T, D> {
     private Class entityClass;
     private Class dtoClass;
     private String tableName;
+    private String idName;
     private ClassMapper<T, D> classMapper;
     private static final String UNDERLINE = "_";
 
@@ -51,6 +53,11 @@ public class BaseController<T, D> {
         this.dtoClass = dto;
         this.tableName = this.humpToUnderline(this.entityClass.getSimpleName()).toLowerCase();
         this.classMapper = new ClassMapper(this.entityClass, this.dtoClass);
+        for (Field field : entity.getDeclaredFields()) {
+            if (field.isAnnotationPresent(Id.class)) {
+                this.idName = humpToUnderline(field.getName());
+            }
+        }
     }
 
     public Field[] concat(Field[] first, Field[] second) {
@@ -95,7 +102,7 @@ public class BaseController<T, D> {
             for (int i = 0; i < fields.length; ++i) {
                 Field field = fields[i];
                 String fieldName = field.getName();
-                if (!fieldName.equalsIgnoreCase("id")) {
+                if (!fieldName.equalsIgnoreCase(idName)) {
                     String methodName = "get" + getConvert(fieldName);
                     Method method = this.entityClass.getMethod(methodName, null);
                     Object obj = method.invoke(value, null);
@@ -130,7 +137,7 @@ public class BaseController<T, D> {
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
             String fieldName = field.getName();
-            if (!fieldName.equalsIgnoreCase("id")) {
+            if (!fieldName.equalsIgnoreCase(idName)) {
                 Method method = this.entityClass.getMethod("get" + getConvert(fieldName));
                 Object obj = method.invoke(value, (Object[]) null);
                 if (null != obj) {
@@ -155,26 +162,26 @@ public class BaseController<T, D> {
                 sql = "insert into " + this.tableName + "(" + fieldAndValue[0] + ") " + fieldAndValue[1];
                 break;
             case 2:
-                sql = "update " + this.tableName + " set deleted = true where id=" + id;
+                sql = "update " + this.tableName + " set deleted = true where " + idName + " = " + id;
                 break;
             case 3:
-                sql = "delete from " + this.tableName + " where id = " + id;
+                sql = "delete from " + this.tableName + " where " + idName + " = " + id;
                 break;
             case 4:
-                sql = "update " + this.tableName + " set " + this.forUpdateSql(value.get(0)) + " where id = " + id;
+                sql = "update " + this.tableName + " set " + this.forUpdateSql(value.get(0)) + " where " + idName + " = " + id;
                 break;
             case 5:
                 Long begin = (pageQO.getCurrent() - 1L) * pageQO.getPageSize();
                 sql = "select * from " + this.tableName + " limit " + begin + "," + pageQO.getPageSize();
                 break;
             case 6:
-                sql = "select * from " + this.tableName + " where id = " + id;
+                sql = "select * from " + this.tableName + " where " + idName + " = " + id;
                 break;
             case 7:
-                sql = "update " + this.tableName + " set disabled = true where id = " + id;
+                sql = "update " + this.tableName + " set disabled = true where " + idName + " = " + id;
                 break;
             case 8:
-                sql = "update " + this.tableName + " set disabled = false where id = " + id;
+                sql = "update " + this.tableName + " set disabled = false where " + idName + " = " + id;
                 break;
             case 9:
                 sql = "select count(1) from " + this.tableName;
@@ -219,7 +226,8 @@ public class BaseController<T, D> {
     @SneakyThrows
     public ResponseEntity update(@RequestBody D vo) {
         T entity = this.classMapper.voTOEntity(vo);
-        Method method = this.entityClass.getMethod("getId", (Class[]) null);
+        String idName = this.idName.substring(0, 1).toUpperCase() + this.idName.substring(1);
+        Method method = this.entityClass.getMethod("get" + idName, (Class[]) null);
         Long id = (Long) method.invoke(entity, (Object[]) null);
         List<T> entityList = new ArrayList();
         entityList.add(entity);

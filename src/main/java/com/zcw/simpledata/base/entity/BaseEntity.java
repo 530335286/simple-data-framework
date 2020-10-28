@@ -11,7 +11,6 @@ import lombok.Data;
 
 @Data
 public class BaseEntity {
-    private Long id;
     private String createdAt = TimeUtil.Now();
     private String updatedAt = TimeUtil.Now();
     private Boolean disabled = false;

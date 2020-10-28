@@ -31,6 +31,8 @@ public class Init {
 
     private static Pattern linePattern = Pattern.compile("_(\\w)");
 
+    private static String idName = null;
+
     @Value("${entity-package}")
     private String entityPackage;
 
@@ -39,8 +41,6 @@ public class Init {
 
     @Value("${controller-package}")
     private String controllerPackage;
-
-    private Map<String, List<SqlTable>> tableInfo = new HashMap();
 
     private List<String> baseFields = new ArrayList();
 
@@ -58,8 +58,8 @@ public class Init {
 
     @SneakyThrows
     @PostConstruct
-    public void initController() {
-        baseFields.add("id");
+    public void initClass() {
+        Map<TableAndId, List<SqlTable>> tableInfo = new HashMap();
         baseFields.add("createdAt");
         baseFields.add("updatedAt");
         baseFields.add("disabled");
@@ -76,13 +76,19 @@ public class Init {
                         SqlTable sqlTable = new SqlTable();
                         sqlTable.setFieldName(resultSet.getString("Field"));
                         sqlTable.setFieldType(resultSet.getString("Type"));
+                        if (resultSet.getString("Key").equals("PRI")) {
+                            idName = resultSet.getString("Field");
+                        }
                         return sqlTable;
                     }
                 });
-                tableInfo.put(tableName, sqlTables);
+                TableAndId tableAndId = new TableAndId();
+                tableAndId.setTableName(tableName);
+                tableAndId.setIdName(lineToHump(idName));
+                tableInfo.put(tableAndId, sqlTables);
             }
         });
-        for (Map.Entry<String, List<SqlTable>> entry : tableInfo.entrySet()) {
+        for (Map.Entry<TableAndId, List<SqlTable>> entry : tableInfo.entrySet()) {
             generateEntity(entry);
             generateVO(entry);
             generateController(entry);
@@ -90,8 +96,10 @@ public class Init {
 
     }
 
-    private void generateController(Map.Entry<String, List<SqlTable>> entry) {
-        String entityName = lineToHump(entry.getKey());
+    private void generateController(Map.Entry<TableAndId, List<SqlTable>> entry) {
+        TableAndId tableAndId = entry.getKey();
+        String entityName = tableAndId.getTableName();
+        entityName = lineToHump(entityName);
         entityName = entityName.substring(0, 1).toUpperCase() + entityName.substring(1);
         String controllerName = entityName + "Controller";
         String classString = "package " + controllerPackage + ";\n" +
@@ -101,7 +109,7 @@ public class Init {
                 "import org.springframework.web.bind.annotation.RequestMapping;\n" +
                 "import org.springframework.web.bind.annotation.RestController;\n" +
                 "@RestController\n" +
-                "@RequestMapping(value = \"/" + lineToHump(entry.getKey()) + "\")\n" +
+                "@RequestMapping(value = \"/" + lineToHump(entry.getKey().getTableName()) + "\")\n" +
                 "public class " + controllerName + " extends BaseController<" + entityName + "," + entityName + "VO>{\n" +
                 "\tpublic " + entityName + "Controller() {\n" +
                 "        super(" + entityName + ".class, " + entityName + "VO.class);\n" +
@@ -116,8 +124,10 @@ public class Init {
         generateClass(fileName, classString, controllerPackage, controllerName);
     }
 
-    private void generateEntity(Map.Entry<String, List<SqlTable>> entry) {
-        String entityName = lineToHump(entry.getKey());
+    private void generateEntity(Map.Entry<TableAndId, List<SqlTable>> entry) {
+        TableAndId tableAndId = entry.getKey();
+        String entityName = tableAndId.getTableName();
+        entityName = lineToHump(entityName);
         entityName = entityName.substring(0, 1).toUpperCase() + entityName.substring(1);
         List<String> fieldNames = entry.getValue().stream().map((sqlTable) -> {
             String fieldName = sqlTable.getFieldName();
@@ -130,10 +140,12 @@ public class Init {
             classString =
                     "package " + entityPackage + ";\n" +
                             "import com.zcw.simpledata.base.entity.BaseEntity;\n" +
+                            "import com.zcw.simpledata.base.annotations.Id;\n" +
                             "public class " + entityName + " extends BaseEntity{\n";
         } else {
             classString =
                     "package " + entityPackage + ";\n" +
+                            "import com.zcw.simpledata.base.annotations.Id;\n" +
                             "public class " + entityName + "{\n";
         }
         List<SqlTable> sqlTables = entry.getValue();
@@ -142,6 +154,10 @@ public class Init {
             fieldName = lineToHump(fieldName);
             if (baseFields.contains(fieldName) && isContains) {
                 continue;
+            }
+            if (tableAndId.getIdName().equals(fieldName)) {
+                classString += "@Id\n";
+                sqlTable.setFieldType("id");
             }
             classString += "private " + sqlTable.getFieldType() + " " + fieldName + ";\n";
         }
@@ -165,8 +181,10 @@ public class Init {
         generateClass(fileName, classString, entityPackage, entityName);
     }
 
-    private void generateVO(Map.Entry<String, List<SqlTable>> entry) {
-        String entityName = lineToHump(entry.getKey());
+    private void generateVO(Map.Entry<TableAndId, List<SqlTable>> entry) {
+        TableAndId tableAndId = entry.getKey();
+        String entityName = tableAndId.getTableName();
+        entityName = lineToHump(entityName);
         entityName = entityName.substring(0, 1).toUpperCase() + entityName.substring(1);
         entityName += "VO";
         List<String> fieldNames = entry.getValue().stream().map((sqlTable) -> {
