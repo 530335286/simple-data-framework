@@ -11,6 +11,7 @@ import com.zcw.simpledata.base.entity.qo.PageQO;
 import com.zcw.simpledata.base.entity.vo.PageVO;
 import com.zcw.simpledata.base.enums.SqlEnum;
 import com.zcw.simpledata.base.exceptions.derive.ExtendsException;
+import com.zcw.simpledata.base.exceptions.derive.IdException;
 import com.zcw.simpledata.base.exceptions.derive.NullException;
 import com.zcw.simpledata.base.utils.SqlUtil;
 import com.zcw.simpledata.config.Init;
@@ -53,7 +54,7 @@ public class BaseController<T, D> {
 
     @SneakyThrows
     public BaseController(Class entity, Class vo) {
-        this.sqlUtil = new SqlUtil(entity, vo);
+        this.sqlUtil = new SqlUtil(entity, vo, this);
         this.isCache = (Init.cacheTime != null);
         this.cacheDataMap = new HashMap();
     }
@@ -93,6 +94,9 @@ public class BaseController<T, D> {
     @SneakyThrows
     @DeleteMapping(value = "/delete/false/{id}")
     public ResponseEntity deleteFalse(@PathVariable Long id) {
+        if (id == null || id <= 0) {
+            throw new IdException();
+        }
         if (sqlUtil.isExtends) {
             T entity = sqlUtil.classMapper.voTOEntity(queryById(id).getBody());
             if (entity == null) {
@@ -111,6 +115,9 @@ public class BaseController<T, D> {
 
     @DeleteMapping(value = "/delete/true/{id}")
     public ResponseEntity deleteTrue(@PathVariable Long id) {
+        if (id == null || id <= 0) {
+            throw new IdException();
+        }
         String sql = sqlUtil.generateSql(SqlEnum.DeleteTrue, null, id, null);
         int result = this.jdbcTemplate.update(sql);
         cacheDataMap.clear();
@@ -121,9 +128,12 @@ public class BaseController<T, D> {
     @SneakyThrows
     public ResponseEntity update(@RequestBody D vo) {
         T entity = sqlUtil.classMapper.voTOEntity(vo);
-        String idName = sqlUtil.idName.substring(0, 1).toUpperCase() + sqlUtil.idName.substring(1);
-        Method method = sqlUtil.entityClass.getMethod("get" + idName, (Class[]) null);
-        Long id = (Long) method.invoke(entity, (Object[]) null);
+        String idName = sqlUtil.id.substring(0, 1).toUpperCase() + sqlUtil.id.substring(1);
+        Method method = sqlUtil.entityClass.getMethod("get" + idName, null);
+        Long id = (Long) method.invoke(entity, null);
+        if (id == null || id == 0) {
+            throw new IdException();
+        }
         List<T> entityList = new ArrayList();
         entityList.add(entity);
         String sql = sqlUtil.generateSql(SqlEnum.Update, entityList, id, null);
@@ -135,6 +145,9 @@ public class BaseController<T, D> {
     @SneakyThrows
     @GetMapping(value = "/queryById/{id}")
     public ResponseEntity<D> queryById(@PathVariable Long id) {
+        if (id == null || id <= 0) {
+            throw new IdException();
+        }
         String sql = sqlUtil.generateSql(SqlEnum.SelectById, null, id, null);
         List<D> cacheList = getCache(sql);
         if (cacheList == null || cacheList.size() == 0) {
@@ -204,6 +217,9 @@ public class BaseController<T, D> {
     @SneakyThrows
     @PatchMapping(value = "/disable/{id}")
     public ResponseEntity disable(@PathVariable Long id) {
+        if (id == null || id <= 0) {
+            throw new IdException();
+        }
         if (sqlUtil.isExtends) {
             T entity = sqlUtil.classMapper.voTOEntity(queryById(id).getBody());
             if (entity == null) {
@@ -223,6 +239,9 @@ public class BaseController<T, D> {
     @SneakyThrows
     @PatchMapping(value = "/enable/{id}")
     public ResponseEntity enable(@PathVariable Long id) {
+        if (id == null || id <= 0) {
+            throw new IdException();
+        }
         if (sqlUtil.isExtends) {
             T entity = sqlUtil.classMapper.voTOEntity(queryById(id).getBody());
             if (entity == null) {
@@ -258,6 +277,9 @@ public class BaseController<T, D> {
     @DeleteMapping(value = "/batchDelete/true")
     public ResponseEntity batchDeleteTrue(@RequestBody List<Long> idList) {
         for (Long id : idList) {
+            if (id == null || id <= 0) {
+                throw new IdException();
+            }
             deleteTrue(id);
         }
         return ResponseEntity.ok().build();
@@ -268,6 +290,9 @@ public class BaseController<T, D> {
     public ResponseEntity batchDeleteFalse(@RequestBody List<Long> idList) {
         if (sqlUtil.isExtends) {
             for (Long id : idList) {
+                if (id == null || id <= 0) {
+                    throw new IdException();
+                }
                 deleteFalse(id);
             }
             return ResponseEntity.ok().build();

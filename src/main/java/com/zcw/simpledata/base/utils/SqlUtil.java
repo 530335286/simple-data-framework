@@ -1,6 +1,7 @@
 package com.zcw.simpledata.base.utils;
 
 import com.zcw.simpledata.base.annotations.Id;
+import com.zcw.simpledata.base.controller.BaseController;
 import com.zcw.simpledata.base.entity.BaseEntity;
 import com.zcw.simpledata.base.entity.qo.PageQO;
 import com.zcw.simpledata.base.enums.SqlEnum;
@@ -39,14 +40,17 @@ public class SqlUtil<T, D> {
 
     public boolean isExtends;
 
+    private BaseController<T, D> controller;
+
     private SqlUtil() {
 
     }
 
     @SneakyThrows
-    public SqlUtil(Class entity, Class vo) {
+    public SqlUtil(Class entity, Class vo, BaseController controller) {
         this.entityClass = entity;
         this.voClass = vo;
+        this.controller = controller;
         this.tableName = SqlUtil.humpToUnderline(this.entityClass.getSimpleName()).toLowerCase();
         this.classMapper = new ClassMapper(this.entityClass, this.voClass);
         this.isExtends = (T) entityClass.newInstance() instanceof BaseEntity;
@@ -128,9 +132,6 @@ public class SqlUtil<T, D> {
     @SneakyThrows
     private String forUpdateSql(T value) {
         Field[] fields = this.entityClass.getDeclaredFields();
-        if (isExtends) {
-            fields = this.concat(fields, BaseEntity.class.getDeclaredFields());
-        }
         String sql = "";
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
@@ -157,6 +158,7 @@ public class SqlUtil<T, D> {
         if (null == entity) {
             throw new NullException();
         }
+        entity = classMapper.voTOEntity(controller.queryById(id).getBody());
         Method method = entityClass.getMethod("getVersion", null);
         Long version = (Long) method.invoke(entity, null);
         sql += " and version = " + version;
@@ -172,15 +174,15 @@ public class SqlUtil<T, D> {
 
     public String generateSql(SqlEnum sqlEnum, List<T> value, Long id, PageQO pageQO) {
         String sql = "";
-        switch (sqlEnum.getSqlType().intValue()) {
-            case 1:
+        switch (sqlEnum) {
+            case Insert:
                 String[] fieldAndValue = this.generateField(value);
                 sql = "insert into " + this.tableName + "(" + fieldAndValue[0] + ") " + fieldAndValue[1];
                 break;
-            case 2:
+            case DeleteFalse:
                 if (Init.version) {
                     if (isExtends) {
-                        sql = "update " + this.tableName + " set deleted = true , version = version + 1 where " + idName + " = " + id;
+                        sql = "update " + this.tableName + " set deleted = true , version = version + 1 , updated_at = \'" + TimeUtil.Now() + "\' where " + idName + " = " + id;
                         sql = updateVersion(sql, id, value.get(0));
                     } else {
                         throw new ExtendsException();
@@ -190,14 +192,14 @@ public class SqlUtil<T, D> {
                 }
                 sql = isDelete(sql);
                 break;
-            case 3:
+            case DeleteTrue:
                 sql = "delete from " + this.tableName + " where " + idName + " = " + id;
                 sql = isDelete(sql);
                 break;
-            case 4:
+            case Update:
                 if (Init.version) {
                     if (isExtends) {
-                        sql = "update " + this.tableName + " set " + this.forUpdateSql(value.get(0)) + ", version = version +1 where " + idName + " = " + id;
+                        sql = "update " + this.tableName + " set " + this.forUpdateSql(value.get(0)) + ", version = version +1 , updated_at = \'" + TimeUtil.Now() + "\' where " + idName + " = " + id;
                         sql = updateVersion(sql, id, value.get(0));
                     } else {
                         throw new ExtendsException();
@@ -207,7 +209,7 @@ public class SqlUtil<T, D> {
                 }
                 sql = isDelete(sql);
                 break;
-            case 5:
+            case SelectPage:
                 Long begin = (pageQO.getCurrent() - 1L) * pageQO.getPageSize();
                 sql = "select * from " + this.tableName;
                 if (isExtends) {
@@ -215,14 +217,14 @@ public class SqlUtil<T, D> {
                 }
                 sql += " limit " + begin + "," + pageQO.getPageSize();
                 break;
-            case 6:
+            case SelectById:
                 sql = "select * from " + this.tableName + " where " + idName + " = " + id;
                 sql = isDelete(sql);
                 break;
-            case 7:
+            case Disable:
                 if (Init.version) {
                     if (isExtends) {
-                        sql = "update " + this.tableName + " set disabled = true,version = version + 1 where " + idName + " = " + id;
+                        sql = "update " + this.tableName + " set disabled = true,version = version + 1 , updated_at = \'" + TimeUtil.Now() + "\' where " + idName + " = " + id;
                         sql = updateVersion(sql, id, value.get(0));
                     } else {
                         throw new ExtendsException();
@@ -232,10 +234,10 @@ public class SqlUtil<T, D> {
                 }
                 sql = isDelete(sql);
                 break;
-            case 8:
+            case Enable:
                 if (Init.version) {
                     if (isExtends) {
-                        sql = "update " + this.tableName + " set disabled = false,version = version + 1 where " + idName + " = " + id;
+                        sql = "update " + this.tableName + " set disabled = false,version = version + 1 , updated_at = \'" + TimeUtil.Now() + "\' where " + idName + " = " + id;
                         sql = updateVersion(sql, id, value.get(0));
                     } else {
                         throw new ExtendsException();
@@ -245,13 +247,13 @@ public class SqlUtil<T, D> {
                 }
                 sql = isDelete(sql);
                 break;
-            case 9:
+            case Count:
                 sql = "select count(1) from " + this.tableName;
                 if (isExtends) {
                     sql += " where deleted = false";
                 }
                 break;
-            case 10:
+            case BatchSave:
                 fieldAndValue = this.generateField(value);
                 sql = "insert into " + this.tableName + "(" + fieldAndValue[0] + ") " + fieldAndValue[1];
                 break;
