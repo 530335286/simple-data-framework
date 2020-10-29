@@ -185,7 +185,7 @@ public class Init {
         String str;
         while ((str = bufferedReader.readLine()) != null) {
             if (str.contains("@EnableSimpleData")) {
-                str = "@EnableSimpleData";
+                str = "@EnableSimpleData(initClass = false,version = " + version + ")";
             }
             MainJavaContent.append(str + "\n");
             str = null;
