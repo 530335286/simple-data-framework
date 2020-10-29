@@ -16,5 +16,5 @@ public @interface EnableCache {
      * 缓存有效时间(s)
      * @return
      */
-    long value() default 3600l;
+    long value() default 600l;
 }
