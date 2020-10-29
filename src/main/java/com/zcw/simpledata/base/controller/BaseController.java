@@ -86,6 +86,7 @@ public class BaseController<T, D> {
         entityList.add(entity);
         String sql = sqlUtil.generateSql(SqlEnum.Insert, entityList, null, null);
         int result = this.jdbcTemplate.update(sql);
+        cacheDataMap.clear();
         return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
 
@@ -101,6 +102,7 @@ public class BaseController<T, D> {
             value.add(entity);
             String sql = sqlUtil.generateSql(SqlEnum.DeleteFalse, value, id, null);
             int result = this.jdbcTemplate.update(sql);
+            cacheDataMap.clear();
             return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
         } else {
             throw new ExtendsException();
@@ -111,6 +113,7 @@ public class BaseController<T, D> {
     public ResponseEntity deleteTrue(@PathVariable Long id) {
         String sql = sqlUtil.generateSql(SqlEnum.DeleteTrue, null, id, null);
         int result = this.jdbcTemplate.update(sql);
+        cacheDataMap.clear();
         return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
 
@@ -125,6 +128,7 @@ public class BaseController<T, D> {
         entityList.add(entity);
         String sql = sqlUtil.generateSql(SqlEnum.Update, entityList, id, null);
         int result = this.jdbcTemplate.update(sql);
+        cacheDataMap.clear();
         return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
 
@@ -209,6 +213,7 @@ public class BaseController<T, D> {
             value.add(entity);
             String sql = sqlUtil.generateSql(SqlEnum.Disable, value, id, null);
             int result = this.jdbcTemplate.update(sql);
+            cacheDataMap.clear();
             return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
         } else {
             throw new ExtendsException();
@@ -227,6 +232,7 @@ public class BaseController<T, D> {
             value.add(entity);
             String sql = sqlUtil.generateSql(SqlEnum.Enable, value, id, null);
             int result = this.jdbcTemplate.update(sql);
+            cacheDataMap.clear();
             return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
         } else {
             throw new ExtendsException();
@@ -245,6 +251,7 @@ public class BaseController<T, D> {
         List<T> entityList = sqlUtil.classMapper.voTOEntity(voList);
         String sql = sqlUtil.generateSql(SqlEnum.BatchSave, entityList, null, null);
         int result = this.jdbcTemplate.update(sql);
+        cacheDataMap.clear();
         return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
 
