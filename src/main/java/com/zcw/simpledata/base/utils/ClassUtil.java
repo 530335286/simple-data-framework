@@ -1,7 +1,7 @@
 package com.zcw.simpledata.base.utils;
 
+import com.zcw.simpledata.base.annotations.EnableCache;
 import com.zcw.simpledata.base.annotations.EnableSimpleData;
-import com.zcw.simpledata.base.exceptions.ApiException;
 import com.zcw.simpledata.base.exceptions.LoopException;
 import com.zcw.simpledata.config.Init;
 
@@ -31,7 +31,12 @@ public class ClassUtil {
             Class<?> aClass = Class.forName(packageName + name);
             if (aClass.isAnnotationPresent(EnableSimpleData.class)) {
                 Init.version = aClass.getAnnotation(EnableSimpleData.class).version();
-                Init.mainClassName=aClass.getName();
+                Init.mainClassName = aClass.getName();
+                if (aClass.isAnnotationPresent(EnableCache.class)) {
+                    Init.cacheTime = aClass.getAnnotation(EnableCache.class).value();
+                } else {
+                    Init.cacheTime = null;
+                }
                 return aClass.getAnnotation(EnableSimpleData.class).initClass();
             }
         } catch (Exception e) {

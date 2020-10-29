@@ -68,6 +68,8 @@ public class Init {
 
     public static String mainClassName;
 
+    public static Long cacheTime;
+
     private List<String> baseFields = new ArrayList();
 
     private String lineToHump(String str) {
@@ -81,40 +83,41 @@ public class Init {
         return sb.toString();
     }
 
-    private void errLog(boolean isEntity, boolean isVo, boolean isController) {
+    private boolean errLog(boolean isEntity, boolean isVo, boolean isController) {
         if (isEntity && isVo && isController) {
-            return;
+            return true;
         }
         if (!isEntity && !isVo && !isController) {
             log.error("请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
             log.error("请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
             log.error("请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
-            return;
+            return false;
         }
         if (!isEntity && !isVo) {
             log.error("请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
             log.error("请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
-            return;
+            return false;
         }
         if (!isVo && !isController) {
             log.error("请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
             log.error("请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
-            return;
+            return false;
         }
         if (!isEntity && !isController) {
             log.error("请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
             log.error("请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
-            return;
+            return false;
         }
         if (!isEntity) {
             log.error("请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
-            return;
+            return false;
         }
         if (!isVo) {
             log.error("请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
-            return;
+            return false;
         }
         log.error("请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
+        return false;
     }
 
     @SneakyThrows
@@ -136,7 +139,10 @@ public class Init {
         boolean isEntity = environment.containsProperty(entityPackageName);
         boolean isVo = environment.containsProperty(voPackageName);
         boolean isController = environment.containsProperty(controllerPackageName);
-        errLog(isEntity, isVo, isController);
+        boolean canContinue = errLog(isEntity, isVo, isController);
+        if (!canContinue) {
+            return;
+        }
         entityPackage = environment.getProperty(entityPackageName);
         voPackage = environment.getProperty(voPackageName);
         controllerPackage = environment.getProperty(controllerPackageName);
@@ -178,16 +184,15 @@ public class Init {
             generateVO(entry);
             generateController(entry);
         }
-        //将启动类注解initClass=true删删掉
-        path = path.replace("/","\\");
-        mainClassName = mainClassName.replace(".","\\");
+        path = path.replace("/", "\\");
+        mainClassName = mainClassName.replace(".", "\\");
         String MainPackageFileName = path + mainClassName + ".java";
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(MainPackageFileName)));
         StringBuffer MainJavaContent = new StringBuffer(bufferedReader.readLine());
         String str;
-        while((str = bufferedReader.readLine())!=null){
-            if(str.contains("@EnableSimpleData")){
-                str = "@EnableSimpleData";
+        while ((str = bufferedReader.readLine()) != null) {
+            if (str.contains("@EnableSimpleData")) {
+                str = "@EnableSimpleData(initClass = false,version = "+version+")";
             }
             MainJavaContent.append(str + "\n");
             str = null;
@@ -195,7 +200,7 @@ public class Init {
         BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(MainPackageFileName)));
         bufferedWriter.write(MainJavaContent.toString());
         bufferedWriter.flush();
-        log.info("SimpleData : 类初始化完成 请刷新目录查看");
+        log.info("Simple-Data : 类初始化完成 请刷新目录查看");
         System.exit(0);
     }
 
@@ -275,7 +280,12 @@ public class Init {
             classString += "public " + sqlTable.getFieldType() + " get" + upFieldName + "(){return this." + fieldName + ";}\n";
         }
         classString += "}";
-        String[] packageStr = entityPackage.split("\\.");
+        String[] packageStr = null;
+        try {
+            packageStr = entityPackage.split("\\.");
+        } catch (NullPointerException exception) {
+            log.error("Simple-Data : 请配置正确的包名");
+        }
         String fileName = System.getProperty("user.dir") + "/src/main/java/";
         for (String pack : packageStr) {
             fileName += (pack + "/");
@@ -337,7 +347,6 @@ public class Init {
         generateClass(fileName, classString, voPackage, entityName);
     }
 
-    @SneakyThrows
     private void generateClass(String fileName, String classString, String packageName, String className) {
         List<String> classNameList = getClasses(packageName).stream().map((c) -> {
             return c.getSimpleName();
@@ -346,23 +355,38 @@ public class Init {
             return;
         }
         File file = new File(fileName);
-        FileWriter fileWriter = new FileWriter(file);
-        fileWriter.write(classString);
-        fileWriter.flush();
-        fileWriter.close();
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        StandardJavaFileManager manager = compiler.getStandardFileManager(null, null, null);
-        Iterable<? extends JavaFileObject> javaFileObjects = manager.getJavaFileObjects(fileName);
-        String dest = System.getProperty("user.dir") + "/target/classes";
-        List<String> options = new ArrayList<String>();
-        options.add("-d");
-        options.add(dest);
-        JavaCompiler.CompilationTask task = compiler.getTask(null, manager, null, options, null, javaFileObjects);
-        task.call();
-        manager.close();
-        URL[] urls = new URL[]{new URL("file:/" + System.getProperty("user.dir") + "/target/classes")};
-        ClassLoader classLoader = new URLClassLoader(urls);
-        Object obj = classLoader.loadClass(packageName + "." + className).newInstance();
+
+        FileWriter fileWriter = null;
+        try {
+            fileWriter = new FileWriter(file);
+            fileWriter.write(classString);
+            fileWriter.flush();
+            fileWriter.close();
+            JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+            StandardJavaFileManager manager = compiler.getStandardFileManager(null, null, null);
+            Iterable<? extends JavaFileObject> javaFileObjects = manager.getJavaFileObjects(fileName);
+            String dest = System.getProperty("user.dir") + "/target/classes";
+            List<String> options = new ArrayList<String>();
+            options.add("-d");
+            options.add(dest);
+            JavaCompiler.CompilationTask task = compiler.getTask(null, manager, null, options, null, javaFileObjects);
+            task.call();
+            manager.close();
+            URL[] urls = new URL[]{new URL("file:/" + System.getProperty("user.dir") + "/target/classes")};
+            ClassLoader classLoader = new URLClassLoader(urls);
+            Object obj = classLoader.loadClass(packageName + "." + className).newInstance();
+        } catch (FileNotFoundException e) {
+            log.error("Simple-Data : 请配置正确的包名");
+            throw new LoopException("Simple-Data : 找不到指定的文件,类初始化中断");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public static List<Class<?>> getClasses(String packageName) {

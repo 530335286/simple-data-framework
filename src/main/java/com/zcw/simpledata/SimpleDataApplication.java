@@ -1,6 +1,3 @@
-package com.zcw.simpledata;
-
-import com.zcw.simpledata.base.annotations.EnableSimpleData;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -11,7 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 
 @SpringBootApplication
-@EnableSimpleData(initClass = true,version = true)
 public class SimpleDataApplication {
 
     public static void main(String[] args) {
