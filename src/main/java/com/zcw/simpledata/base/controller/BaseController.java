@@ -122,7 +122,7 @@ public class BaseController<T, D> {
     public ResponseEntity update(@RequestBody D vo) {
         T entity = sqlUtil.classMapper.voTOEntity(vo);
         String idName = sqlUtil.idName.substring(0, 1).toUpperCase() + sqlUtil.idName.substring(1);
-        Method method = sqlUtil.entityClass.getMethod("get" + sqlUtil.id, (Class[]) null);
+        Method method = sqlUtil.entityClass.getMethod("get" + idName, (Class[]) null);
         Long id = (Long) method.invoke(entity, (Object[]) null);
         List<T> entityList = new ArrayList();
         entityList.add(entity);
