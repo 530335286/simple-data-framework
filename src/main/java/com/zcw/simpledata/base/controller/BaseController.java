@@ -10,10 +10,8 @@ import com.zcw.simpledata.base.entity.CacheData;
 import com.zcw.simpledata.base.entity.qo.PageQO;
 import com.zcw.simpledata.base.entity.vo.PageVO;
 import com.zcw.simpledata.base.enums.SqlEnum;
-import com.zcw.simpledata.base.exceptions.derive.BadRequestException;
 import com.zcw.simpledata.base.exceptions.derive.ExtendsException;
 import com.zcw.simpledata.base.exceptions.derive.NullException;
-import com.zcw.simpledata.base.exceptions.derive.OkRequestException;
 import com.zcw.simpledata.base.utils.SqlUtil;
 import com.zcw.simpledata.config.Init;
 import lombok.SneakyThrows;
@@ -88,7 +86,7 @@ public class BaseController<T, D> {
         entityList.add(entity);
         String sql = sqlUtil.generateSql(SqlEnum.Insert, entityList, null, null);
         int result = this.jdbcTemplate.update(sql);
-        throw  result > 0 ? new OkRequestException() : new BadRequestException();
+        return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
 
     @SneakyThrows
@@ -103,7 +101,7 @@ public class BaseController<T, D> {
             value.add(entity);
             String sql = sqlUtil.generateSql(SqlEnum.DeleteFalse, value, id, null);
             int result = this.jdbcTemplate.update(sql);
-            throw  result > 0 ? new OkRequestException() : new BadRequestException();
+            return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
         } else {
             throw new ExtendsException();
         }
@@ -113,7 +111,7 @@ public class BaseController<T, D> {
     public ResponseEntity deleteTrue(@PathVariable Long id) {
         String sql = sqlUtil.generateSql(SqlEnum.DeleteTrue, null, id, null);
         int result = this.jdbcTemplate.update(sql);
-        throw  result > 0 ? new OkRequestException() : new BadRequestException();
+        return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
 
     @PutMapping(value = "/update")
@@ -127,7 +125,7 @@ public class BaseController<T, D> {
         entityList.add(entity);
         String sql = sqlUtil.generateSql(SqlEnum.Update, entityList, id, null);
         int result = this.jdbcTemplate.update(sql);
-        throw  result > 0 ? new OkRequestException() : new BadRequestException();
+        return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
 
     @SneakyThrows
@@ -211,7 +209,7 @@ public class BaseController<T, D> {
             value.add(entity);
             String sql = sqlUtil.generateSql(SqlEnum.Disable, value, id, null);
             int result = this.jdbcTemplate.update(sql);
-            throw  result > 0 ? new OkRequestException() : new BadRequestException();
+            return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
         } else {
             throw new ExtendsException();
         }
@@ -229,7 +227,7 @@ public class BaseController<T, D> {
             value.add(entity);
             String sql = sqlUtil.generateSql(SqlEnum.Enable, value, id, null);
             int result = this.jdbcTemplate.update(sql);
-            throw  result > 0 ? new OkRequestException() : new BadRequestException();
+            return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
         } else {
             throw new ExtendsException();
         }
@@ -247,7 +245,7 @@ public class BaseController<T, D> {
         List<T> entityList = sqlUtil.classMapper.voTOEntity(voList);
         String sql = sqlUtil.generateSql(SqlEnum.BatchSave, entityList, null, null);
         int result = this.jdbcTemplate.update(sql);
-        throw  result > 0 ? new OkRequestException() : new BadRequestException();
+        return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
 
     @DeleteMapping(value = "/batchDelete/true")
@@ -255,7 +253,7 @@ public class BaseController<T, D> {
         for (Long id : idList) {
             deleteTrue(id);
         }
-        throw new OkRequestException();
+        return ResponseEntity.ok().build();
     }
 
     @SneakyThrows
@@ -265,7 +263,7 @@ public class BaseController<T, D> {
             for (Long id : idList) {
                 deleteFalse(id);
             }
-            throw new OkRequestException();
+            return ResponseEntity.ok().build();
         } else {
             throw new ExtendsException();
         }
@@ -276,6 +274,6 @@ public class BaseController<T, D> {
         for (D vo : voList) {
             update(vo);
         }
-        throw new OkRequestException();
+        return ResponseEntity.ok().build();
     }
 }

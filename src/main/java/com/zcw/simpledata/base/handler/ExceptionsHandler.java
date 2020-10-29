@@ -5,9 +5,9 @@ import com.zcw.simpledata.base.exceptions.derive.BadRequestException;
 import com.zcw.simpledata.base.exceptions.derive.OkRequestException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /***
  * simple-data
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @version 0.0.1
  */
 
-@ControllerAdvice
+@RestControllerAdvice
 @Log4j2
 public abstract class ExceptionsHandler {
 
