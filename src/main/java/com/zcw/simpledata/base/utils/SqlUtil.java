@@ -256,7 +256,7 @@ public class SqlUtil<T, D> {
                 sql = "insert into " + this.tableName + "(" + fieldAndValue[0] + ") " + fieldAndValue[1];
                 break;
         }
-        log.info("执行的SQL:" + sql);
+        log.info("Simple-Data : " + sql);
         return sql;
     }
 }

@@ -67,6 +67,9 @@ public class BaseController<T, D> {
 
     private List<D> getCache(String sql) {
         CacheData<D> cacheData = cacheDataMap.get(sql);
+        if (cacheData == null) {
+            return null;
+        }
         if (System.currentTimeMillis() > cacheData.getTime()) {
             cacheDataMap.remove(sql);
             return null;
@@ -129,7 +132,7 @@ public class BaseController<T, D> {
     public ResponseEntity<D> queryById(@PathVariable Long id) {
         String sql = sqlUtil.generateSql(SqlEnum.SelectById, null, id, null);
         List<D> cacheList = getCache(sql);
-        if (cacheList == null && cacheList.size() == 0) {
+        if (cacheList == null || cacheList.size() == 0) {
             List<T> entityList = this.jdbcTemplate.query(sql, new Object[0], new BeanPropertyRowMapper(sqlUtil.entityClass));
             T entity = (T) sqlUtil.entityClass.newInstance();
             if (null != entityList && entityList.size() > 0) {
@@ -158,7 +161,7 @@ public class BaseController<T, D> {
         String sql = sqlUtil.generateSql(SqlEnum.SelectPage, null, null, pageQO);
         List<D> cacheList = getCache(sql);
         List<D> voList = null;
-        if (cacheList == null && cacheList.size() == 0) {
+        if (cacheList == null || cacheList.size() == 0) {
             List<T> entityList = this.jdbcTemplate.query(sql, new Object[0], new BeanPropertyRowMapper(sqlUtil.entityClass));
             voList = sqlUtil.classMapper.entityTOVo(entityList);
         } else {

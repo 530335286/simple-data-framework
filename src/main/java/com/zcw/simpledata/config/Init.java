@@ -365,6 +365,7 @@ public class Init {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
             log.error("Simple-Data : 找不到指定的文件,类初始化中断");
+            throw new LoopException("Simple-Data : 找不到指定的文件,类初始化中断");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InstantiationException e) {
