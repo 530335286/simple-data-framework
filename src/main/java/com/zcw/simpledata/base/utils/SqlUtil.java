@@ -4,8 +4,8 @@ import com.zcw.simpledata.base.annotations.Id;
 import com.zcw.simpledata.base.entity.BaseEntity;
 import com.zcw.simpledata.base.entity.qo.PageQO;
 import com.zcw.simpledata.base.enums.SqlEnum;
-import com.zcw.simpledata.base.exceptions.ExtendsException;
-import com.zcw.simpledata.base.exceptions.NullException;
+import com.zcw.simpledata.base.exceptions.derive.ExtendsException;
+import com.zcw.simpledata.base.exceptions.derive.NullException;
 import com.zcw.simpledata.base.mapper.ClassMapper;
 import com.zcw.simpledata.config.Init;
 import lombok.SneakyThrows;
@@ -155,7 +155,7 @@ public class SqlUtil<T, D> {
     @SneakyThrows
     private String updateVersion(String sql, Long id, T entity) {
         if (null == entity) {
-            throw new NullException("查找不到此实体");
+            throw new NullException();
         }
         Method method = entityClass.getMethod("getVersion", null);
         Long version = (Long) method.invoke(entity, null);
@@ -183,7 +183,7 @@ public class SqlUtil<T, D> {
                         sql = "update " + this.tableName + " set deleted = true , version = version + 1 where " + idName + " = " + id;
                         sql = updateVersion(sql, id, value.get(0));
                     } else {
-                        throw new ExtendsException("乐观锁只支持BaseEntity类型");
+                        throw new ExtendsException();
                     }
                 } else {
                     sql = "update " + this.tableName + " set deleted = true where " + idName + " = " + id;
@@ -200,7 +200,7 @@ public class SqlUtil<T, D> {
                         sql = "update " + this.tableName + " set " + this.forUpdateSql(value.get(0)) + ", version = version +1 where " + idName + " = " + id;
                         sql = updateVersion(sql, id, value.get(0));
                     } else {
-                        throw new ExtendsException("乐观锁只支持BaseEntity类型");
+                        throw new ExtendsException();
                     }
                 } else {
                     sql = "update " + this.tableName + " set " + this.forUpdateSql(value.get(0)) + " where " + idName + " = " + id;
@@ -225,7 +225,7 @@ public class SqlUtil<T, D> {
                         sql = "update " + this.tableName + " set disabled = true,version = version + 1 where " + idName + " = " + id;
                         sql = updateVersion(sql, id, value.get(0));
                     } else {
-                        throw new ExtendsException("乐观锁只支持BaseEntity类型");
+                        throw new ExtendsException();
                     }
                 } else {
                     sql = "update " + this.tableName + " set disabled = true where " + idName + " = " + id;
@@ -238,7 +238,7 @@ public class SqlUtil<T, D> {
                         sql = "update " + this.tableName + " set disabled = false,version = version + 1 where " + idName + " = " + id;
                         sql = updateVersion(sql, id, value.get(0));
                     } else {
-                        throw new ExtendsException("乐观锁只支持BaseEntity类型");
+                        throw new ExtendsException();
                     }
                 } else {
                     sql = "update " + this.tableName + " set disabled = false where " + idName + " = " + id;

@@ -1,14 +1,19 @@
 package com.zcw.simpledata.base.controller;
 
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import com.zcw.simpledata.base.annotations.Id;
 import com.zcw.simpledata.base.entity.CacheData;
 import com.zcw.simpledata.base.entity.qo.PageQO;
 import com.zcw.simpledata.base.entity.vo.PageVO;
 import com.zcw.simpledata.base.enums.SqlEnum;
-import com.zcw.simpledata.base.exceptions.NullException;
+import com.zcw.simpledata.base.exceptions.derive.BadRequestException;
+import com.zcw.simpledata.base.exceptions.derive.ExtendsException;
+import com.zcw.simpledata.base.exceptions.derive.NullException;
+import com.zcw.simpledata.base.exceptions.derive.OkRequestException;
 import com.zcw.simpledata.base.utils.SqlUtil;
 import com.zcw.simpledata.config.Init;
 import lombok.SneakyThrows;
@@ -35,8 +40,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Log4j2
 public class BaseController<T, D> {
-
-    private boolean isExtends;
 
     private boolean isCache;
 
@@ -85,24 +88,24 @@ public class BaseController<T, D> {
         entityList.add(entity);
         String sql = sqlUtil.generateSql(SqlEnum.Insert, entityList, null, null);
         int result = this.jdbcTemplate.update(sql);
-        return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+        throw  result > 0 ? new OkRequestException() : new BadRequestException();
     }
 
     @SneakyThrows
     @DeleteMapping(value = "/delete/false/{id}")
     public ResponseEntity deleteFalse(@PathVariable Long id) {
-        if (isExtends) {
+        if (sqlUtil.isExtends) {
             T entity = sqlUtil.classMapper.voTOEntity(queryById(id).getBody());
             if (entity == null) {
-                throw new NullException("查找不到此实体");
+                throw new NullException();
             }
             List<T> value = new ArrayList();
             value.add(entity);
             String sql = sqlUtil.generateSql(SqlEnum.DeleteFalse, value, id, null);
             int result = this.jdbcTemplate.update(sql);
-            return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+            throw  result > 0 ? new OkRequestException() : new BadRequestException();
         } else {
-            return ResponseEntity.ok("实体未继承BaseEntity");
+            throw new ExtendsException();
         }
     }
 
@@ -110,7 +113,7 @@ public class BaseController<T, D> {
     public ResponseEntity deleteTrue(@PathVariable Long id) {
         String sql = sqlUtil.generateSql(SqlEnum.DeleteTrue, null, id, null);
         int result = this.jdbcTemplate.update(sql);
-        return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+        throw  result > 0 ? new OkRequestException() : new BadRequestException();
     }
 
     @PutMapping(value = "/update")
@@ -124,7 +127,7 @@ public class BaseController<T, D> {
         entityList.add(entity);
         String sql = sqlUtil.generateSql(SqlEnum.Update, entityList, id, null);
         int result = this.jdbcTemplate.update(sql);
-        return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+        throw  result > 0 ? new OkRequestException() : new BadRequestException();
     }
 
     @SneakyThrows
@@ -134,9 +137,24 @@ public class BaseController<T, D> {
         List<D> cacheList = getCache(sql);
         if (cacheList == null || cacheList.size() == 0) {
             List<T> entityList = this.jdbcTemplate.query(sql, new Object[0], new BeanPropertyRowMapper(sqlUtil.entityClass));
-            T entity = (T) sqlUtil.entityClass.newInstance();
+            T entity = null;
             if (null != entityList && entityList.size() > 0) {
                 entity = entityList.get(0);
+                Field[] fields = sqlUtil.entityClass.getDeclaredFields();
+                for (Field field : fields) {
+                    if (field.isAnnotationPresent(Id.class)) {
+                        String idName = field.getName();
+                        idName = SqlUtil.getConvert(idName);
+                        Method method = sqlUtil.entityClass.getMethod("get" + idName);
+                        Long entityId = (Long) method.invoke(entity, null);
+                        if (entityId == null || entityId == 0) {
+                            throw new NullException();
+                        }
+                    }
+                }
+
+            } else {
+                throw new NullException();
             }
             D vo = sqlUtil.classMapper.entityTOVo(entity);
             if (isCache) {
@@ -184,36 +202,36 @@ public class BaseController<T, D> {
     @SneakyThrows
     @PatchMapping(value = "/disable/{id}")
     public ResponseEntity disable(@PathVariable Long id) {
-        if (isExtends) {
+        if (sqlUtil.isExtends) {
             T entity = sqlUtil.classMapper.voTOEntity(queryById(id).getBody());
             if (entity == null) {
-                throw new NullException("查找不到此实体");
+                throw new NullException();
             }
             List<T> value = new ArrayList();
             value.add(entity);
             String sql = sqlUtil.generateSql(SqlEnum.Disable, value, id, null);
             int result = this.jdbcTemplate.update(sql);
-            return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+            throw  result > 0 ? new OkRequestException() : new BadRequestException();
         } else {
-            return ResponseEntity.ok("实体未继承BaseEntity");
+            throw new ExtendsException();
         }
     }
 
     @SneakyThrows
     @PatchMapping(value = "/enable/{id}")
     public ResponseEntity enable(@PathVariable Long id) {
-        if (isExtends) {
+        if (sqlUtil.isExtends) {
             T entity = sqlUtil.classMapper.voTOEntity(queryById(id).getBody());
             if (entity == null) {
-                throw new NullException("查找不到此实体");
+                throw new NullException();
             }
             List<T> value = new ArrayList();
             value.add(entity);
             String sql = sqlUtil.generateSql(SqlEnum.Enable, value, id, null);
             int result = this.jdbcTemplate.update(sql);
-            return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+            throw  result > 0 ? new OkRequestException() : new BadRequestException();
         } else {
-            return ResponseEntity.ok("实体未继承BaseEntity");
+            throw new ExtendsException();
         }
     }
 
@@ -229,7 +247,7 @@ public class BaseController<T, D> {
         List<T> entityList = sqlUtil.classMapper.voTOEntity(voList);
         String sql = sqlUtil.generateSql(SqlEnum.BatchSave, entityList, null, null);
         int result = this.jdbcTemplate.update(sql);
-        return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+        throw  result > 0 ? new OkRequestException() : new BadRequestException();
     }
 
     @DeleteMapping(value = "/batchDelete/true")
@@ -237,19 +255,19 @@ public class BaseController<T, D> {
         for (Long id : idList) {
             deleteTrue(id);
         }
-        return ResponseEntity.ok().build();
+        throw new OkRequestException();
     }
 
     @SneakyThrows
     @DeleteMapping(value = "/batchDelete/false")
     public ResponseEntity batchDeleteFalse(@RequestBody List<Long> idList) {
-        if (isExtends) {
+        if (sqlUtil.isExtends) {
             for (Long id : idList) {
                 deleteFalse(id);
             }
-            return ResponseEntity.ok().build();
+            throw new OkRequestException();
         } else {
-            return ResponseEntity.ok("实体未继承BaseEntity");
+            throw new ExtendsException();
         }
     }
 
@@ -258,6 +276,6 @@ public class BaseController<T, D> {
         for (D vo : voList) {
             update(vo);
         }
-        return ResponseEntity.ok().build();
+        throw new OkRequestException();
     }
 }

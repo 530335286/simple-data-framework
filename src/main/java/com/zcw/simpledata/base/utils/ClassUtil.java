@@ -2,7 +2,7 @@ package com.zcw.simpledata.base.utils;
 
 import com.zcw.simpledata.base.annotations.EnableCache;
 import com.zcw.simpledata.base.annotations.EnableSimpleData;
-import com.zcw.simpledata.base.exceptions.LoopException;
+import com.zcw.simpledata.base.exceptions.derive.LoopException;
 import com.zcw.simpledata.config.Init;
 
 import java.io.File;

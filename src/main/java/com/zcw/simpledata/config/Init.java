@@ -1,12 +1,10 @@
 package com.zcw.simpledata.config;
 
-import com.zcw.simpledata.base.exceptions.LoopException;
+import com.zcw.simpledata.base.exceptions.derive.LoopException;
 import com.zcw.simpledata.base.utils.ClassUtil;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -18,7 +16,6 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import java.io.*;
-import java.lang.reflect.Method;
 import java.net.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
