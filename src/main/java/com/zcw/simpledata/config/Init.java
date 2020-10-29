@@ -19,10 +19,7 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import java.io.*;
 import java.lang.reflect.Method;
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.URLDecoder;
+import java.net.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -67,6 +64,8 @@ public class Init {
     private String controllerPackage;
 
     public static String mainClassName;
+
+    public static Long cacheTime;
 
     private List<String> baseFields = new ArrayList();
 
@@ -178,15 +177,14 @@ public class Init {
             generateVO(entry);
             generateController(entry);
         }
-        //将启动类注解initClass=true删删掉
-        path = path.replace("/","\\");
-        mainClassName = mainClassName.replace(".","\\");
+        path = path.replace("/", "\\");
+        mainClassName = mainClassName.replace(".", "\\");
         String MainPackageFileName = path + mainClassName + ".java";
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(MainPackageFileName)));
         StringBuffer MainJavaContent = new StringBuffer(bufferedReader.readLine());
         String str;
-        while((str = bufferedReader.readLine())!=null){
-            if(str.contains("@EnableSimpleData")){
+        while ((str = bufferedReader.readLine()) != null) {
+            if (str.contains("@EnableSimpleData")) {
                 str = "@EnableSimpleData";
             }
             MainJavaContent.append(str + "\n");
@@ -195,7 +193,7 @@ public class Init {
         BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(MainPackageFileName)));
         bufferedWriter.write(MainJavaContent.toString());
         bufferedWriter.flush();
-        log.info("SimpleData : 类初始化完成 请刷新目录查看");
+        log.info("Simple-Data : 类初始化完成 请刷新目录查看");
         System.exit(0);
     }
 
@@ -337,7 +335,6 @@ public class Init {
         generateClass(fileName, classString, voPackage, entityName);
     }
 
-    @SneakyThrows
     private void generateClass(String fileName, String classString, String packageName, String className) {
         List<String> classNameList = getClasses(packageName).stream().map((c) -> {
             return c.getSimpleName();
@@ -346,23 +343,37 @@ public class Init {
             return;
         }
         File file = new File(fileName);
-        FileWriter fileWriter = new FileWriter(file);
-        fileWriter.write(classString);
-        fileWriter.flush();
-        fileWriter.close();
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        StandardJavaFileManager manager = compiler.getStandardFileManager(null, null, null);
-        Iterable<? extends JavaFileObject> javaFileObjects = manager.getJavaFileObjects(fileName);
-        String dest = System.getProperty("user.dir") + "/target/classes";
-        List<String> options = new ArrayList<String>();
-        options.add("-d");
-        options.add(dest);
-        JavaCompiler.CompilationTask task = compiler.getTask(null, manager, null, options, null, javaFileObjects);
-        task.call();
-        manager.close();
-        URL[] urls = new URL[]{new URL("file:/" + System.getProperty("user.dir") + "/target/classes")};
-        ClassLoader classLoader = new URLClassLoader(urls);
-        Object obj = classLoader.loadClass(packageName + "." + className).newInstance();
+        try {
+            FileWriter fileWriter = new FileWriter(file);
+            fileWriter.write(classString);
+            fileWriter.flush();
+            fileWriter.close();
+            JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+            StandardJavaFileManager manager = compiler.getStandardFileManager(null, null, null);
+            Iterable<? extends JavaFileObject> javaFileObjects = manager.getJavaFileObjects(fileName);
+            String dest = System.getProperty("user.dir") + "/target/classes";
+            List<String> options = new ArrayList<String>();
+            options.add("-d");
+            options.add(dest);
+            JavaCompiler.CompilationTask task = compiler.getTask(null, manager, null, options, null, javaFileObjects);
+            task.call();
+            manager.close();
+            URL[] urls = new URL[]{new URL("file:/" + System.getProperty("user.dir") + "/target/classes")};
+            ClassLoader classLoader = new URLClassLoader(urls);
+            Object obj = classLoader.loadClass(packageName + "." + className).newInstance();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            log.error("Simple-Data : 找不到指定的文件,类初始化中断");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public static List<Class<?>> getClasses(String packageName) {
