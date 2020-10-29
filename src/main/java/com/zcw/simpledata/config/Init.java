@@ -56,9 +56,9 @@ public class Init {
 
     private static boolean flag = true;
 
-    private static final String entityPackageName = "com.zcw.simple-data.entity-package";
-    private static final String voPackageName = "com.zcw.simple-data.vo-package";
-    private static final String controllerPackageName = "com.zcw.simple-data.controller-package";
+    private static final String entityPackageName = "simple-data.entity-package";
+    private static final String voPackageName = "simple-data.vo-package";
+    private static final String controllerPackageName = "simple-data.controller-package";
 
     private String entityPackage;
 
@@ -195,7 +195,7 @@ public class Init {
         BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(MainPackageFileName)));
         bufferedWriter.write(MainJavaContent.toString());
         bufferedWriter.flush();
-        log.info("SimpleData : 类初始化完成 请刷新目录查看");
+        log.info("Simple-data : 类初始化完成 请刷新目录查看");
         System.exit(0);
     }
 
