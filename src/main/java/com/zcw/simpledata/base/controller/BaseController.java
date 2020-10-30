@@ -56,12 +56,12 @@ public class BaseController<T, D> {
         return baseService.update(vo);
     }
 
-    @GetMapping(value = "/queryById/{id}")
+    @GetMapping(value = "/getById/{id}")
     public ResponseEntity<D> queryById(@PathVariable Long id) {
         return baseService.queryById(id);
     }
 
-    @GetMapping(value = "/queryPage")
+    @GetMapping(value = "/getPage")
     public ResponseEntity<PageVO<D>> queryPage(PageQO pageQO, D qo, @RequestBody(required = false) List<Map<String, QueryEnum>> condition) {
         Map<String, QueryEnum> queryEnumMap = new HashMap<>();
         Map<String, OrderEnum> orderEnumMap = new HashMap<>();
@@ -93,8 +93,8 @@ public class BaseController<T, D> {
         return baseService.enable(id);
     }
 
-    @GetMapping(value = "/queryCount")
-    public ResponseEntity<Long> queryCount(D qo, @RequestBody Map<String, QueryEnum> condition) {
+    @GetMapping(value = "/getCount")
+    public ResponseEntity<Long> queryCount(D qo, @RequestBody(required = false) Map<String, QueryEnum> condition) {
         return baseService.queryCount(qo, condition);
     }
 

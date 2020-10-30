@@ -317,7 +317,6 @@ public class SqlUtil<T, D> {
                 break;
             case DeleteTrue:
                 sql = "delete from " + this.tableName + " where " + idName + " = " + id;
-                sql = isDelete(sql);
                 break;
             case Update:
                 if (Init.version) {

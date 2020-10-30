@@ -46,7 +46,7 @@ public class BaseService<T, D> {
     }
 
     private void setCache(List<D> data, String sql) {
-        if(!isCache){
+        if (!isCache) {
             return;
         }
         Long time = System.currentTimeMillis() + (Init.cacheTime * 1000);
@@ -73,7 +73,7 @@ public class BaseService<T, D> {
         T entity = sqlUtil.classMapper.voTOEntity(vo);
         List<T> entityList = new ArrayList();
         entityList.add(entity);
-        String sql = sqlUtil.generateSql(SqlEnum.Insert, entityList, null, null, null,null);
+        String sql = sqlUtil.generateSql(SqlEnum.Insert, entityList, null, null, null, null);
         int result = this.jdbcTemplate.update(sql);
         cacheDataMap.clear();
         return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
@@ -90,7 +90,7 @@ public class BaseService<T, D> {
             }
             List<T> value = new ArrayList();
             value.add(entity);
-            String sql = sqlUtil.generateSql(SqlEnum.DeleteFalse, value, id, null, null,null);
+            String sql = sqlUtil.generateSql(SqlEnum.DeleteFalse, value, id, null, null, null);
             int result = this.jdbcTemplate.update(sql);
             cacheDataMap.clear();
             return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
@@ -103,7 +103,7 @@ public class BaseService<T, D> {
         if (id == null || id <= 0) {
             throw new IdException();
         }
-        String sql = sqlUtil.generateSql(SqlEnum.DeleteTrue, null, id, null, null,null);
+        String sql = sqlUtil.generateSql(SqlEnum.DeleteTrue, null, id, null, null, null);
         int result = this.jdbcTemplate.update(sql);
         cacheDataMap.clear();
         return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
@@ -121,7 +121,7 @@ public class BaseService<T, D> {
         }
         List<T> entityList = new ArrayList();
         entityList.add(entity);
-        String sql = sqlUtil.generateSql(SqlEnum.Update, entityList, id, null, null,null);
+        String sql = sqlUtil.generateSql(SqlEnum.Update, entityList, id, null, null, null);
         int result = this.jdbcTemplate.update(sql);
         cacheDataMap.clear();
         return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
@@ -132,7 +132,7 @@ public class BaseService<T, D> {
         if (id == null || id <= 0) {
             throw new IdException();
         }
-        String sql = sqlUtil.generateSql(SqlEnum.SelectById, null, id, null, null,null);
+        String sql = sqlUtil.generateSql(SqlEnum.SelectById, null, id, null, null, null);
         List<D> cacheList = getCache(sql);
         if (cacheList == null || cacheList.size() == 0) {
             List<T> entityList = this.jdbcTemplate.query(sql, new Object[0], new BeanPropertyRowMapper(sqlUtil.entityClass));
@@ -155,7 +155,10 @@ public class BaseService<T, D> {
             } else {
                 ResponseEntity.ok(null);
             }
-            D vo = sqlUtil.classMapper.entityTOVo(entity);
+            D vo = null;
+            if (entity != null) {
+                vo = sqlUtil.classMapper.entityTOVo(entity);
+            }
             if (isCache) {
                 List<D> data = new ArrayList();
                 data.add(vo);
@@ -179,7 +182,7 @@ public class BaseService<T, D> {
             entity = sqlUtil.classMapper.voTOEntity(qo);
             list.add(entity);
         }
-        String sql = sqlUtil.generateSql(SqlEnum.SelectPage, list, null, pageQO, condition,orderEnumMap);
+        String sql = sqlUtil.generateSql(SqlEnum.SelectPage, list, null, pageQO, condition, orderEnumMap);
         List<D> cacheList = getCache(sql);
         List<D> voList = null;
         if (cacheList == null || cacheList.size() == 0) {
@@ -195,7 +198,7 @@ public class BaseService<T, D> {
         pageVO.setQueryNum(pageQO.getQueryNum());
         setCache(voList, sql);
         if (pageQO.getQueryNum()) {
-            sql = sqlUtil.generateSql(SqlEnum.Count, list, null, null, condition,null);
+            sql = sqlUtil.generateSql(SqlEnum.Count, list, null, null, condition, null);
             Long num = this.jdbcTemplate.queryForObject(sql, Long.class);
             pageVO.setTotal(num);
         }
@@ -213,7 +216,7 @@ public class BaseService<T, D> {
             }
             List<T> value = new ArrayList();
             value.add(entity);
-            String sql = sqlUtil.generateSql(SqlEnum.Disable, value, id, null, null,null);
+            String sql = sqlUtil.generateSql(SqlEnum.Disable, value, id, null, null, null);
             int result = this.jdbcTemplate.update(sql);
             cacheDataMap.clear();
             return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
@@ -233,7 +236,7 @@ public class BaseService<T, D> {
             }
             List<T> value = new ArrayList();
             value.add(entity);
-            String sql = sqlUtil.generateSql(SqlEnum.Enable, value, id, null, null,null);
+            String sql = sqlUtil.generateSql(SqlEnum.Enable, value, id, null, null, null);
             int result = this.jdbcTemplate.update(sql);
             cacheDataMap.clear();
             return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
@@ -248,14 +251,14 @@ public class BaseService<T, D> {
             T entity = sqlUtil.classMapper.voTOEntity(qo);
             list.add(entity);
         }
-        String sql = sqlUtil.generateSql(SqlEnum.Count, list, null, null, condition,null);
+        String sql = sqlUtil.generateSql(SqlEnum.Count, list, null, null, condition, null);
         Long num = this.jdbcTemplate.queryForObject(sql, Long.class);
         return ResponseEntity.ok(num);
     }
 
     public ResponseEntity batchSave(List<D> voList) {
         List<T> entityList = sqlUtil.classMapper.voTOEntity(voList);
-        String sql = sqlUtil.generateSql(SqlEnum.BatchSave, entityList, null, null, null,null);
+        String sql = sqlUtil.generateSql(SqlEnum.BatchSave, entityList, null, null, null, null);
         int result = this.jdbcTemplate.update(sql);
         cacheDataMap.clear();
         return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
