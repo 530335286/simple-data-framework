@@ -259,7 +259,7 @@ public class BaseController<T, D> {
 
     @GetMapping(value = "/queryCount")
     public ResponseEntity<Long> queryCount() {
-        String sql = sqlUtil.generateSql(SqlEnum.Count, null, (Long) null, null);
+        String sql = sqlUtil.generateSql(SqlEnum.Count, null, null, null);
         Long num = this.jdbcTemplate.queryForObject(sql, Long.class);
         return ResponseEntity.ok(num);
     }
