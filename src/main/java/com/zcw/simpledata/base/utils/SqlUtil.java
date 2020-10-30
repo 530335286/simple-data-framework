@@ -93,6 +93,41 @@ public class SqlUtil<T, D> {
         return first + after;
     }
 
+
+    public static boolean isBaseType(Object object) {
+        Class className = object.getClass();
+        if (className.equals(java.lang.Integer.class) ||
+                className.equals(java.lang.Byte.class) ||
+                className.equals(java.lang.Long.class) ||
+                className.equals(java.lang.Double.class) ||
+                className.equals(java.lang.Float.class) ||
+                className.equals(java.lang.Character.class) ||
+                className.equals(java.lang.Short.class)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isBaseDefaultValue(Object object) {
+        Class className = object.getClass();
+        if (className.equals(java.lang.Integer.class)) {
+            return (int) object == 0;
+        } else if (className.equals(java.lang.Byte.class)) {
+            return (byte) object == 0;
+        } else if (className.equals(java.lang.Long.class)) {
+            return (long) object == 0L;
+        } else if (className.equals(java.lang.Double.class)) {
+            return (double) object == 0.0d;
+        } else if (className.equals(java.lang.Float.class)) {
+            return (float) object == 0.0f;
+        } else if (className.equals(java.lang.Character.class)) {
+            return (char) object == '\u0000';
+        } else if (className.equals(java.lang.Short.class)) {
+            return (short) object == 0;
+        }
+        return false;
+    }
+
     @SneakyThrows
     private String[] generateField(List<T> valueList) {
         Field[] fields = this.entityClass.getDeclaredFields();
@@ -185,7 +220,11 @@ public class SqlUtil<T, D> {
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
             String fieldName = humpToUnderline(field.getName());
-            String operator = condition.get(field.getName()).getOperator();
+            QueryEnum queryEnum = condition.get(field.getName());
+            if (queryEnum == null) {
+                continue;
+            }
+            String operator = queryEnum.getOperator();
             String upName = field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
             Method method = null;
             try {
@@ -193,20 +232,28 @@ public class SqlUtil<T, D> {
             } catch (NoSuchMethodException e) {
                 continue;
             }
+            Object fieldValue = null;
+            try {
+                fieldValue = method.invoke(value, null);
+                if (isBaseType(fieldValue)) {
+                    if (isBaseDefaultValue(fieldValue)) {
+                        continue;
+                    }
+                }
+                if (fieldValue == null) {
+                    continue;
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
             if (findFieldNum == 0) {
                 sql += append;
             } else {
                 sql += " and ";
             }
             findFieldNum++;
-            Object fieldValue = null;
-            try {
-                fieldValue = method.invoke(value, null);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
             sql = sql + fieldName + operator + fieldValue;
         }
         return sql;
