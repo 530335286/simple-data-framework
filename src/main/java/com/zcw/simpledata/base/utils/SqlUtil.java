@@ -235,11 +235,6 @@ public class SqlUtil<T, D> {
             Object fieldValue = null;
             try {
                 fieldValue = method.invoke(value, null);
-                if (isBaseType(fieldValue)) {
-                    if (isBaseDefaultValue(fieldValue)) {
-                        continue;
-                    }
-                }
                 if (fieldValue == null) {
                     continue;
                 }

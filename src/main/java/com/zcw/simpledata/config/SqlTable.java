@@ -28,17 +28,17 @@ public class SqlTable {
         }
         switch (fieldType) {
             case "bit":
-                fieldType = "boolean";
+                fieldType = "Boolean";
                 break;
             case "id":
-                fieldType = "long";
+                fieldType = "Long";
                 break;
             default:
                 fieldType = "String";
                 break;
         }
         if (this.fieldName.equals("id")) {
-            fieldType = "long";
+            fieldType = "Long";
         }
         this.fieldType = fieldType;
     }
