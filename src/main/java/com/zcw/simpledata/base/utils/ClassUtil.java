@@ -7,9 +7,15 @@ import com.zcw.simpledata.config.Init;
 
 import java.io.File;
 
+/***
+ * simple-data
+ * @author zcw
+ * @version 0.0.1
+ */
+
 public class ClassUtil {
 
-    public static boolean loop(File folder, String packageName) throws Exception {
+    public static boolean loop(File folder, String packageName){
         File[] files = folder.listFiles();
         for (int fileIndex = 0; fileIndex < files.length; fileIndex++) {
             File file = files[fileIndex];

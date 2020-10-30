@@ -1,21 +1,25 @@
 package com.zcw.simpledata.base.utils;
 
 import com.zcw.simpledata.base.annotations.Id;
-import com.zcw.simpledata.base.controller.BaseController;
 import com.zcw.simpledata.base.entity.BaseEntity;
 import com.zcw.simpledata.base.entity.qo.PageQO;
+import com.zcw.simpledata.base.enums.QueryEnum;
 import com.zcw.simpledata.base.enums.SqlEnum;
 import com.zcw.simpledata.base.exceptions.derive.ExtendsException;
 import com.zcw.simpledata.base.exceptions.derive.NullException;
 import com.zcw.simpledata.base.mapper.ClassMapper;
+import com.zcw.simpledata.base.service.BaseService;
 import com.zcw.simpledata.config.Init;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /***
  * simple-data
@@ -40,17 +44,17 @@ public class SqlUtil<T, D> {
 
     public boolean isExtends;
 
-    private BaseController<T, D> controller;
+    private BaseService<T, D> service;
 
     private SqlUtil() {
 
     }
 
     @SneakyThrows
-    public SqlUtil(Class entity, Class vo, BaseController controller) {
+    public SqlUtil(Class entity, Class vo, BaseService service) {
         this.entityClass = entity;
         this.voClass = vo;
-        this.controller = controller;
+        this.service = service;
         this.tableName = SqlUtil.humpToUnderline(this.entityClass.getSimpleName()).toLowerCase();
         this.classMapper = new ClassMapper(this.entityClass, this.voClass);
         this.isExtends = (T) entityClass.newInstance() instanceof BaseEntity;
@@ -158,7 +162,7 @@ public class SqlUtil<T, D> {
         if (null == entity) {
             throw new NullException();
         }
-        entity = classMapper.voTOEntity(controller.queryById(id).getBody());
+        entity = classMapper.voTOEntity(service.queryById(id).getBody());
         Method method = entityClass.getMethod("getVersion", null);
         Long version = (Long) method.invoke(entity, null);
         sql += " and version = " + version;
@@ -172,7 +176,46 @@ public class SqlUtil<T, D> {
         return sql;
     }
 
-    public String generateSql(SqlEnum sqlEnum, List<T> value, Long id, PageQO pageQO) {
+    private String appendCondition(String sql, T value, Map<String, QueryEnum> condition, String append) {
+        if (value == null) {
+            throw new NullPointerException();
+        }
+        Field[] fields = entityClass.getDeclaredFields();
+        int findFieldNum = 0;
+        for (int i = 0; i < fields.length; i++) {
+            Field field = fields[i];
+            String fieldName = humpToUnderline(field.getName());
+            String operator = condition.get(field.getName()).getOperator();
+            String upName = field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+            Method method = null;
+            try {
+                method = entityClass.getMethod("get" + upName, null);
+            } catch (NoSuchMethodException e) {
+                continue;
+            }
+            if (findFieldNum == 0) {
+                sql += append;
+            } else {
+                sql += " and ";
+            }
+            findFieldNum++;
+            Object fieldValue = null;
+            try {
+                fieldValue = method.invoke(value, null);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+            sql = sql + fieldName + operator + fieldValue;
+        }
+        return sql;
+    }
+
+    public String generateSql(SqlEnum sqlEnum, List<T> value, Long id, PageQO pageQO, Map<String, QueryEnum> condition) {
+        if (service.jdbcTemplate == null) {
+            service.jdbcTemplate = SpringUtil.getBean(JdbcTemplate.class);
+        }
         String sql = "";
         switch (sqlEnum) {
             case Insert:
@@ -212,8 +255,13 @@ public class SqlUtil<T, D> {
             case SelectPage:
                 Long begin = (pageQO.getCurrent() - 1L) * pageQO.getPageSize();
                 sql = "select * from " + this.tableName;
+                String append = " where ";
                 if (isExtends) {
                     sql += " where deleted = false";
+                    append = " and ";
+                }
+                if (condition != null && value != null && value.size() > 0) {
+                    sql = appendCondition(sql, value.get(0), condition, append);
                 }
                 sql += " limit " + begin + "," + pageQO.getPageSize();
                 break;
@@ -249,8 +297,13 @@ public class SqlUtil<T, D> {
                 break;
             case Count:
                 sql = "select count(1) from " + this.tableName;
+                append = " where ";
                 if (isExtends) {
                     sql += " where deleted = false";
+                    append = " and ";
+                }
+                if (condition != null && value != null && value.size() > 0) {
+                    sql = appendCondition(sql, value.get(0), condition, append);
                 }
                 break;
             case BatchSave:

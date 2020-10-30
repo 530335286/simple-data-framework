@@ -82,35 +82,35 @@ public class Init {
             return;
         }
         if (!isEntity && !isVo && !isController) {
-            log.error("请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
-            log.error("请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
-            log.error("请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
+            log.error("Simple-Data : 请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
+            log.error("Simple-Data : 请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
+            log.error("Simple-Data : 请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
             return;
         }
         if (!isEntity && !isVo) {
-            log.error("请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
-            log.error("请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
+            log.error("Simple-Data : 请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
+            log.error("Simple-Data : 请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
             return;
         }
         if (!isVo && !isController) {
-            log.error("请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
-            log.error("请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
+            log.error("Simple-Data : 请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
+            log.error("Simple-Data : 请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
             return;
         }
         if (!isEntity && !isController) {
-            log.error("请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
-            log.error("请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
+            log.error("Simple-Data : 请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
+            log.error("Simple-Data : 请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
             return;
         }
         if (!isEntity) {
-            log.error("请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
+            log.error("Simple-Data : 请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
             return;
         }
         if (!isVo) {
-            log.error("请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
+            log.error("Simple-Data : 请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
             return;
         }
-        log.error("请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
+        log.error("Simple-Data : 请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
     }
 
     @SneakyThrows
