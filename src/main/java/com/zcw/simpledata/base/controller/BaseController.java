@@ -7,8 +7,6 @@ import com.zcw.simpledata.base.entity.qo.PageQO;
 import com.zcw.simpledata.base.entity.vo.PageVO;
 import com.zcw.simpledata.base.enums.QueryEnum;
 import com.zcw.simpledata.base.service.BaseService;
-import lombok.SneakyThrows;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
