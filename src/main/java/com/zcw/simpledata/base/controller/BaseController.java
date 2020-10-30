@@ -33,7 +33,6 @@ public class BaseController<T, D> {
     private BaseController() {
     }
 
-    @SneakyThrows
     public BaseController(Class entity, Class vo) {
         baseService=new BaseService(entity, vo);
     }
@@ -43,7 +42,6 @@ public class BaseController<T, D> {
         return baseService.save(vo);
     }
 
-    @SneakyThrows
     @DeleteMapping(value = "/delete/false/{id}")
     public ResponseEntity deleteFalse(@PathVariable Long id) {
         return baseService.deleteFalse(id);
@@ -55,38 +53,33 @@ public class BaseController<T, D> {
     }
 
     @PutMapping(value = "/update")
-    @SneakyThrows
     public ResponseEntity update(@RequestBody D vo) {
         return baseService.update(vo);
     }
 
-    @SneakyThrows
     @GetMapping(value = "/queryById/{id}")
     public ResponseEntity<D> queryById(@PathVariable Long id) {
         return baseService.queryById(id);
     }
 
-    @SneakyThrows
     @GetMapping(value = "/queryPage")
     public ResponseEntity<PageVO<D>> queryPage(PageQO pageQO, D qo, @RequestBody Map<String, QueryEnum> condition) {
         return baseService.queryPage(pageQO, qo, condition);
     }
 
-    @SneakyThrows
     @PatchMapping(value = "/disable/{id}")
     public ResponseEntity disable(@PathVariable Long id) {
         return baseService.disable(id);
     }
 
-    @SneakyThrows
     @PatchMapping(value = "/enable/{id}")
     public ResponseEntity enable(@PathVariable Long id) {
         return baseService.enable(id);
     }
 
     @GetMapping(value = "/queryCount")
-    public ResponseEntity<Long> queryCount() {
-        return baseService.queryCount();
+    public ResponseEntity<Long> queryCount(D qo, @RequestBody Map<String, QueryEnum> condition) {
+        return baseService.queryCount(qo, condition);
     }
 
     @PostMapping(value = "/batchSave")
@@ -99,7 +92,6 @@ public class BaseController<T, D> {
         return baseService.batchDeleteTrue(idList);
     }
 
-    @SneakyThrows
     @DeleteMapping(value = "/batchDelete/false")
     public ResponseEntity batchDeleteFalse(@RequestBody List<Long> idList) {
         return baseService.batchDeleteFalse(idList);

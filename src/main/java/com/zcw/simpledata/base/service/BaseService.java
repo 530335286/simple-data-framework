@@ -38,7 +38,7 @@ public class BaseService<T, D> {
 
     public JdbcTemplate jdbcTemplate;
 
-    public BaseService(Class entity,Class vo) {
+    public BaseService(Class entity, Class vo) {
         this.sqlUtil = new SqlUtil(entity, vo, this);
         this.isCache = (Init.cacheTime != null);
         this.cacheDataMap = new HashMap();
@@ -75,7 +75,6 @@ public class BaseService<T, D> {
         return result > 0 ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
 
-    @SneakyThrows
     public ResponseEntity deleteFalse(Long id) {
         if (id == null || id <= 0) {
             throw new IdException();
@@ -166,7 +165,6 @@ public class BaseService<T, D> {
 
     }
 
-    @SneakyThrows
     public ResponseEntity<PageVO<D>> queryPage(PageQO pageQO, D qo, Map<String, QueryEnum> condition) {
         if (null == pageQO) {
             pageQO = new PageQO();
@@ -200,7 +198,6 @@ public class BaseService<T, D> {
         return ResponseEntity.ok(pageVO);
     }
 
-    @SneakyThrows
     public ResponseEntity disable(Long id) {
         if (id == null || id <= 0) {
             throw new IdException();
@@ -221,7 +218,6 @@ public class BaseService<T, D> {
         }
     }
 
-    @SneakyThrows
     public ResponseEntity enable(Long id) {
         if (id == null || id <= 0) {
             throw new IdException();
@@ -242,8 +238,13 @@ public class BaseService<T, D> {
         }
     }
 
-    public ResponseEntity<Long> queryCount() {
-        String sql = sqlUtil.generateSql(SqlEnum.Count, null, null, null, null);
+    public ResponseEntity<Long> queryCount(D qo, Map<String, QueryEnum> condition) {
+        List<T> list = new ArrayList<>();
+        if (qo != null) {
+            T entity = sqlUtil.classMapper.voTOEntity(qo);
+            list.add(entity);
+        }
+        String sql = sqlUtil.generateSql(SqlEnum.Count, list, null, null, condition);
         Long num = this.jdbcTemplate.queryForObject(sql, Long.class);
         return ResponseEntity.ok(num);
     }
@@ -266,7 +267,6 @@ public class BaseService<T, D> {
         return ResponseEntity.ok().build();
     }
 
-    @SneakyThrows
     public ResponseEntity batchDeleteFalse(List<Long> idList) {
         if (sqlUtil.isExtends) {
             for (Long id : idList) {
