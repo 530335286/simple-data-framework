@@ -173,7 +173,6 @@ public class BaseController<T, D> {
             }
             D vo = sqlUtil.classMapper.entityTOVo(entity);
             if (isCache) {
-                CacheData<D> cacheData = new CacheData();
                 List<D> data = new ArrayList();
                 data.add(vo);
                 setCache(data, sql);
