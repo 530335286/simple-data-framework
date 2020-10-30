@@ -62,18 +62,25 @@ public class BaseController<T, D> {
     }
 
     @GetMapping(value = "/queryPage")
-    public ResponseEntity<PageVO<D>> queryPage(PageQO pageQO, D qo, @RequestBody(required = false) Map<String, QueryEnum> condition) {
+    public ResponseEntity<PageVO<D>> queryPage(PageQO pageQO, D qo, @RequestBody(required = false) List<Map<String, QueryEnum>> condition) {
+        Map<String, QueryEnum> queryEnumMap = new HashMap<>();
         Map<String, OrderEnum> orderEnumMap = new HashMap<>();
-        for (Map.Entry<String, QueryEnum> entry : condition.entrySet()) {
-            if (entry.getValue().getOperator().equals("asc")) {
-                orderEnumMap.put(entry.getKey(), OrderEnum.Asc);
-                condition.remove(entry.getKey());
-            } else if (entry.getValue().getOperator().equals("desc")) {
-                orderEnumMap.put(entry.getKey(), OrderEnum.Desc);
-                condition.remove(entry.getKey());
+        if (condition != null) {
+            for (Map<String, QueryEnum> map : condition) {
+                for (Map.Entry<String, QueryEnum> entry : map.entrySet()) {
+                    if (entry.getValue().getOperator().equals("asc")) {
+                        orderEnumMap.put(entry.getKey(), OrderEnum.Asc);
+                        condition.remove(entry.getKey());
+                    } else if (entry.getValue().getOperator().equals("desc")) {
+                        orderEnumMap.put(entry.getKey(), OrderEnum.Desc);
+                        condition.remove(entry.getKey());
+                    } else {
+                        queryEnumMap.put(entry.getKey(), entry.getValue());
+                    }
+                }
             }
         }
-        return baseService.queryPage(pageQO, qo, condition, orderEnumMap);
+        return baseService.queryPage(pageQO, qo, queryEnumMap, orderEnumMap);
     }
 
     @PatchMapping(value = "/disable/{id}")

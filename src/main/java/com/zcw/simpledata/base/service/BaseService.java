@@ -46,6 +46,9 @@ public class BaseService<T, D> {
     }
 
     private void setCache(List<D> data, String sql) {
+        if(!isCache){
+            return;
+        }
         Long time = System.currentTimeMillis() + (Init.cacheTime * 1000);
         CacheData<D> cacheData = new CacheData();
         cacheData.setTime(time);

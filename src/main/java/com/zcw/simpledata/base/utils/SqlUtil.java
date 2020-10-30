@@ -248,7 +248,12 @@ public class SqlUtil<T, D> {
                 sql += " and ";
             }
             findFieldNum++;
-            sql = sql + fieldName + operator + fieldValue;
+            sql = sql + fieldName + operator;
+            if (queryEnum == QueryEnum.like || queryEnum == QueryEnum.notLike) {
+                sql += "%" + fieldValue + "%";
+            } else {
+                sql += fieldValue;
+            }
         }
         return sql;
     }
@@ -287,7 +292,7 @@ public class SqlUtil<T, D> {
         return sql;
     }
 
-    public String generateSql(SqlEnum sqlEnum, List<T> value, Long id, PageQO pageQO, Map<String, QueryEnum> condition,Map<String,OrderEnum> orderEnumMap) {
+    public String generateSql(SqlEnum sqlEnum, List<T> value, Long id, PageQO pageQO, Map<String, QueryEnum> condition, Map<String, OrderEnum> orderEnumMap) {
         if (service.jdbcTemplate == null) {
             service.jdbcTemplate = SpringUtil.getBean(JdbcTemplate.class);
         }
@@ -339,7 +344,7 @@ public class SqlUtil<T, D> {
                     sql = appendCondition(sql, value.get(0), condition, append);
                 }
                 if (orderEnumMap != null && orderEnumMap.entrySet().size() > 0) {
-                    sql = orderBy(sql,orderEnumMap);
+                    sql = orderBy(sql, orderEnumMap);
                 }
                 sql += " limit " + begin + "," + pageQO.getPageSize();
                 break;
