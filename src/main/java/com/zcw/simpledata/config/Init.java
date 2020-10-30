@@ -85,32 +85,33 @@ public class Init {
             log.error("Simple-Data : 请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
             log.error("Simple-Data : 请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
             log.error("Simple-Data : 请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
-            return;
+            System.exit(0);
         }
         if (!isEntity && !isVo) {
             log.error("Simple-Data : 请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
             log.error("Simple-Data : 请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
-            return;
+            System.exit(0);
         }
         if (!isVo && !isController) {
             log.error("Simple-Data : 请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
             log.error("Simple-Data : 请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
-            return;
+            System.exit(0);
         }
         if (!isEntity && !isController) {
             log.error("Simple-Data : 请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
             log.error("Simple-Data : 请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
-            return;
+            System.exit(0);
         }
         if (!isEntity) {
             log.error("Simple-Data : 请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
-            return;
+            System.exit(0);
         }
         if (!isVo) {
             log.error("Simple-Data : 请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
-            return;
+            System.exit(0);
         }
         log.error("Simple-Data : 请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
+        System.exit(0);
     }
 
     @SneakyThrows
@@ -132,10 +133,34 @@ public class Init {
         boolean isEntity = environment.containsProperty(entityPackageName);
         boolean isVo = environment.containsProperty(voPackageName);
         boolean isController = environment.containsProperty(controllerPackageName);
-        errLog(isEntity, isVo, isController);
-        entityPackage = environment.getProperty(entityPackageName);
-        voPackage = environment.getProperty(voPackageName);
-        controllerPackage = environment.getProperty(controllerPackageName);
+        if(!isEntity && !isController && !isVo){
+            // 创建包
+            String mainClassNameTmp = mainClassName;
+            mainClassNameTmp = mainClassNameTmp.substring(0,mainClassNameTmp.lastIndexOf("."));
+            String packageFilePath = mainClassNameTmp;
+            mainClassNameTmp = mainClassNameTmp.replaceAll("\\.","/");
+            String packagePath = path + mainClassNameTmp;
+            File entityDir = new File(packagePath + "/entity");
+            File voDir = new File(packagePath + "/vo");
+            File controllerDir = new File(packagePath + "/controller");
+            if(!entityDir.exists()){
+                entityDir.mkdir();
+            }
+            if(!voDir.exists()){
+                voDir.mkdir();
+            }
+            if(!controllerDir.exists()){
+                controllerDir.mkdir();
+            }
+            entityPackage = packageFilePath + "/entity".replaceAll("/",".");
+            voPackage = packageFilePath + "/vo".replaceAll("/",".");
+            controllerPackage = packageFilePath + "/controller".replaceAll("/",".");
+        }else{
+            errLog(isEntity, isVo, isController);
+            entityPackage = environment.getProperty(entityPackageName);
+            voPackage = environment.getProperty(voPackageName);
+            controllerPackage = environment.getProperty(controllerPackageName);
+        }
         Map<TableAndId, List<SqlTable>> tableInfo = new HashMap();
         baseFields.add("createdAt");
         baseFields.add("updatedAt");

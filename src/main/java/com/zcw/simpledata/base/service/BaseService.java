@@ -197,7 +197,7 @@ public class BaseService<T, D> {
         if (pageQO.getQueryNum()) {
             sql = sqlUtil.generateSql(SqlEnum.Count, list, null, null, condition,null);
             Long num = this.jdbcTemplate.queryForObject(sql, Long.class);
-            pageVO.setNum(num);
+            pageVO.setTotal(num);
         }
         return ResponseEntity.ok(pageVO);
     }

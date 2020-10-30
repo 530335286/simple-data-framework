@@ -16,5 +16,5 @@ public class PageVO<T> {
     private Long pageSize;
     private Boolean queryNum;
     private List<T> data;
-    private Long num;
+    private Long total;
 }
