@@ -3,6 +3,7 @@ package com.zcw.simpledata.base.utils;
 import com.zcw.simpledata.base.annotations.Id;
 import com.zcw.simpledata.base.entity.BaseEntity;
 import com.zcw.simpledata.base.entity.qo.PageQO;
+import com.zcw.simpledata.base.enums.OrderEnum;
 import com.zcw.simpledata.base.enums.QueryEnum;
 import com.zcw.simpledata.base.enums.SqlEnum;
 import com.zcw.simpledata.base.exceptions.derive.ExtendsException;
@@ -17,9 +18,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /***
  * simple-data
@@ -254,7 +253,41 @@ public class SqlUtil<T, D> {
         return sql;
     }
 
-    public String generateSql(SqlEnum sqlEnum, List<T> value, Long id, PageQO pageQO, Map<String, QueryEnum> condition) {
+    private String orderBy(String sql, Map<String, OrderEnum> orderEnumMap) {
+        Set<Map.Entry<String, OrderEnum>> set = orderEnumMap.entrySet();
+        Iterator<Map.Entry<String, OrderEnum>> iterator = set.iterator();
+        int orderNum = 0;
+        while (iterator.hasNext()) {
+            Map.Entry<String, OrderEnum> entry = iterator.next();
+            String fieldName = entry.getKey();
+            fieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+            try {
+                entityClass.getMethod("get" + fieldName, null);
+                String underName = humpToUnderline(entry.getKey());
+                OrderEnum orderEnum = entry.getValue();
+                if (orderEnum == null) {
+                    continue;
+                }
+                String order = orderEnum.getOrderBy();
+                if (orderNum == 0) {
+                    sql += " order by ";
+                }
+                sql = sql + underName + " " + order;
+                if (iterator.hasNext()) {
+                    sql += ",";
+                }
+                orderNum++;
+            } catch (NoSuchMethodException e) {
+                continue;
+            }
+        }
+        if (sql.substring(sql.length() - 1).equals(",")) {
+            sql = sql.substring(0, sql.length() - 1);
+        }
+        return sql;
+    }
+
+    public String generateSql(SqlEnum sqlEnum, List<T> value, Long id, PageQO pageQO, Map<String, QueryEnum> condition,Map<String,OrderEnum> orderEnumMap) {
         if (service.jdbcTemplate == null) {
             service.jdbcTemplate = SpringUtil.getBean(JdbcTemplate.class);
         }
@@ -304,6 +337,9 @@ public class SqlUtil<T, D> {
                 }
                 if (condition != null && value != null && value.size() > 0) {
                     sql = appendCondition(sql, value.get(0), condition, append);
+                }
+                if (orderEnumMap != null && orderEnumMap.entrySet().size() > 0) {
+                    sql = orderBy(sql,orderEnumMap);
                 }
                 sql += " limit " + begin + "," + pageQO.getPageSize();
                 break;

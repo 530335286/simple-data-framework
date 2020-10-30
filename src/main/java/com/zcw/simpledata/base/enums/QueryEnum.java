@@ -8,14 +8,17 @@ public enum QueryEnum {
     lt(" < "),
     like(" like "),
     notEq(" != "),
-    notLike(" not like ");
+    notLike(" not like "),
+    asc("asc"),
+    desc("desc");
 
     private String operator;
 
     private QueryEnum(String operator) {
         this.operator = operator;
     }
-    public String getOperator(){
+
+    public String getOperator() {
         return this.operator;
     }
 }

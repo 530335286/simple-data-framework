@@ -5,6 +5,7 @@ import java.util.*;
 
 import com.zcw.simpledata.base.entity.qo.PageQO;
 import com.zcw.simpledata.base.entity.vo.PageVO;
+import com.zcw.simpledata.base.enums.OrderEnum;
 import com.zcw.simpledata.base.enums.QueryEnum;
 import com.zcw.simpledata.base.service.BaseService;
 import org.springframework.http.ResponseEntity;
@@ -26,13 +27,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class BaseController<T, D> {
 
-    private BaseService<T,D> baseService;
+    private BaseService<T, D> baseService;
 
     private BaseController() {
     }
 
     public BaseController(Class entity, Class vo) {
-        baseService=new BaseService(entity, vo);
+        baseService = new BaseService(entity, vo);
     }
 
     @PostMapping(value = "/save")
@@ -61,8 +62,18 @@ public class BaseController<T, D> {
     }
 
     @GetMapping(value = "/queryPage")
-    public ResponseEntity<PageVO<D>> queryPage(PageQO pageQO, D qo, @RequestBody Map<String, QueryEnum> condition) {
-        return baseService.queryPage(pageQO, qo, condition);
+    public ResponseEntity<PageVO<D>> queryPage(PageQO pageQO, D qo, @RequestBody(required = false) Map<String, QueryEnum> condition) {
+        Map<String, OrderEnum> orderEnumMap = new HashMap<>();
+        for (Map.Entry<String, QueryEnum> entry : condition.entrySet()) {
+            if (entry.getValue().getOperator().equals("asc")) {
+                orderEnumMap.put(entry.getKey(), OrderEnum.Asc);
+                condition.remove(entry.getKey());
+            } else if (entry.getValue().getOperator().equals("desc")) {
+                orderEnumMap.put(entry.getKey(), OrderEnum.Desc);
+                condition.remove(entry.getKey());
+            }
+        }
+        return baseService.queryPage(pageQO, qo, condition, orderEnumMap);
     }
 
     @PatchMapping(value = "/disable/{id}")

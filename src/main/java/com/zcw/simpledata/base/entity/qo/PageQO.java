@@ -1,5 +1,9 @@
 package com.zcw.simpledata.base.entity.qo;
 
+import com.zcw.simpledata.base.enums.OrderEnum;
+
+import java.util.Map;
+
 /***
  * simple-data
  * @author zcw
