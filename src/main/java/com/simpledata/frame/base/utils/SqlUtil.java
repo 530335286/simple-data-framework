@@ -45,18 +45,21 @@ public class SqlUtil<T, D> {
 
     private BaseService<T, D> service;
 
+    private Field [] fields;
+
     private SqlUtil() {
 
     }
 
     @SneakyThrows
-    public SqlUtil(Class entity, Class vo, BaseService service) {
+    public SqlUtil(Class entity, Class vo, BaseService service,Field [] fields) {
         this.entityClass = entity;
         this.voClass = vo;
         this.service = service;
         this.tableName = SqlUtil.humpToUnderline(this.entityClass.getSimpleName()).toLowerCase();
         this.classMapper = new ClassMapper(this.entityClass, this.voClass);
         this.isExtends = (T) entityClass.newInstance() instanceof BaseEntity;
+        this.fields=fields;
         for (Field field : entity.getDeclaredFields()) {
             if (field.isAnnotationPresent(Id.class)) {
                 this.id = field.getName();
@@ -129,7 +132,6 @@ public class SqlUtil<T, D> {
 
     @SneakyThrows
     private String[] generateField(List<T> valueList) {
-        Field[] fields = this.entityClass.getDeclaredFields();
         if (isExtends) {
             fields = this.concat(fields, BaseEntity.class.getDeclaredFields());
         }

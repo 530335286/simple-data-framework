@@ -23,10 +23,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /***
  * simple-data
@@ -35,6 +32,7 @@ import java.util.Map;
  */
 
 public class BaseService<T, D> {
+
     private boolean isCache;
 
     private SqlUtil<T, D> sqlUtil;
@@ -44,8 +42,9 @@ public class BaseService<T, D> {
     public JdbcTemplate jdbcTemplate;
 
     public BaseService(JdbcTemplate jdbcTemplate,Class entity,Class vo) {
+        Field[] fields = entity.getDeclaredFields();
         this.jdbcTemplate = jdbcTemplate;
-        this.sqlUtil = new SqlUtil(entity, vo, this);
+        this.sqlUtil = new SqlUtil(entity, vo, this,fields);
         this.isCache = (Init.cacheTime != null);
         this.cacheDataMap = new HashMap();
     }
