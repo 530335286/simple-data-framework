@@ -5,9 +5,9 @@ import com.simpledata.frame.base.exceptions.derive.BadRequestException;
 import com.simpledata.frame.base.exceptions.derive.OkRequestException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /***
  * simple-data
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * @version 0.0.1
  */
 
-@RestControllerAdvice
+@ControllerAdvice(basePackages = "com.simpledata.frame.controller")
 @Log4j2
 public abstract class ExceptionsHandler {
 
@@ -31,11 +31,21 @@ public abstract class ExceptionsHandler {
         return ResponseEntity.ok("Simple-Data : 执行失败");
     }
 
+    /**
+     * 全局异常拦截
+     * @param throwable
+     * @return
+     */
     @ResponseBody
     @ExceptionHandler({Throwable.class})
-    public abstract ResponseEntity doException(Throwable throwable);
+    public abstract Object doException(Throwable throwable);
 
+    /**
+     * 自定义异常拦截
+     * @param apiException
+     * @return
+     */
     @ResponseBody
     @ExceptionHandler({ApiException.class})
-    public abstract ResponseEntity doApiException(ApiException apiException);
+    public abstract Object doApiException(ApiException apiException);
 }

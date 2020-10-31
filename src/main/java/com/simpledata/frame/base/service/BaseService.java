@@ -13,12 +13,16 @@ import com.simpledata.frame.base.exceptions.derive.NullException;
 import com.simpledata.frame.base.utils.SqlUtil;
 import com.simpledata.frame.config.Init;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +43,8 @@ public class BaseService<T, D> {
 
     public JdbcTemplate jdbcTemplate;
 
-    public BaseService(Class entity, Class vo) {
+    public BaseService(JdbcTemplate jdbcTemplate,Class entity,Class vo) {
+        this.jdbcTemplate = jdbcTemplate;
         this.sqlUtil = new SqlUtil(entity, vo, this);
         this.isCache = (Init.cacheTime != null);
         this.cacheDataMap = new HashMap();

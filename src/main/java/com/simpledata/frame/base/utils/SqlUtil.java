@@ -293,9 +293,6 @@ public class SqlUtil<T, D> {
     }
 
     public String generateSql(SqlEnum sqlEnum, List<T> value, Long id, PageQO pageQO, Map<String, QueryEnum> condition, Map<String, OrderEnum> orderEnumMap) {
-        if (service.jdbcTemplate == null) {
-            service.jdbcTemplate = SpringUtil.getBean(JdbcTemplate.class);
-        }
         String sql = "";
         switch (sqlEnum) {
             case Insert:

@@ -1,6 +1,8 @@
 package com.simpledata.frame.base.controller;
 
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 
 import com.simpledata.frame.base.entity.qo.PageQO;
@@ -8,7 +10,9 @@ import com.simpledata.frame.base.entity.vo.PageVO;
 import com.simpledata.frame.base.enums.OrderEnum;
 import com.simpledata.frame.base.enums.QueryEnum;
 import com.simpledata.frame.base.service.BaseService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -18,6 +22,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.PostConstruct;
+
 /***
  * simple-data
  * @author zcw
@@ -25,15 +31,26 @@ import org.springframework.web.bind.annotation.RestController;
  */
 
 @RestController
-public class BaseController<T, D> {
+public abstract class BaseController<T, D> {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     private BaseService<T, D> baseService;
+    Class<T> tType;
+    Class<D> dType;
 
-    private BaseController() {
+    public BaseController() {
+        Type type = this.getClass().getGenericSuperclass();
+        ParameterizedType parameterizedType = (ParameterizedType) type;
+        Type[] t = parameterizedType.getActualTypeArguments();
+        tType = (Class<T>) t[0];
+        dType = (Class<D>) t[1];
     }
 
-    public BaseController(Class entity, Class vo) {
-        baseService = new BaseService(entity, vo);
+    @PostConstruct
+    public void init() {
+        baseService = new BaseService<>(jdbcTemplate, tType, dType);
     }
 
     @PostMapping(value = "/save")

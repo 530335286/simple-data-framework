@@ -1,10 +1,13 @@
 package com.simpledata.frame.config;
 
+import com.simpledata.frame.base.exceptions.ApiException;
 import com.simpledata.frame.base.exceptions.derive.LoopException;
+import com.simpledata.frame.base.handler.ExceptionsHandler;
 import com.simpledata.frame.base.utils.ClassUtil;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -133,29 +136,28 @@ public class Init {
         boolean isEntity = environment.containsProperty(entityPackageName);
         boolean isVo = environment.containsProperty(voPackageName);
         boolean isController = environment.containsProperty(controllerPackageName);
-        if(!isEntity && !isController && !isVo){
-            // 创建包
+        if (!isEntity && !isController && !isVo) {
             String mainClassNameTmp = mainClassName;
-            mainClassNameTmp = mainClassNameTmp.substring(0,mainClassNameTmp.lastIndexOf("."));
+            mainClassNameTmp = mainClassNameTmp.substring(0, mainClassNameTmp.lastIndexOf("."));
             String packageFilePath = mainClassNameTmp;
-            mainClassNameTmp = mainClassNameTmp.replaceAll("\\.","/");
+            mainClassNameTmp = mainClassNameTmp.replaceAll("\\.", "/");
             String packagePath = path + mainClassNameTmp;
             File entityDir = new File(packagePath + "/entity");
             File voDir = new File(packagePath + "/vo");
             File controllerDir = new File(packagePath + "/controller");
-            if(!entityDir.exists()){
+            if (!entityDir.exists()) {
                 entityDir.mkdir();
             }
-            if(!voDir.exists()){
+            if (!voDir.exists()) {
                 voDir.mkdir();
             }
-            if(!controllerDir.exists()){
+            if (!controllerDir.exists()) {
                 controllerDir.mkdir();
             }
-            entityPackage = packageFilePath + "/entity".replaceAll("/",".");
-            voPackage = packageFilePath + "/vo".replaceAll("/",".");
-            controllerPackage = packageFilePath + "/controller".replaceAll("/",".");
-        }else{
+            entityPackage = packageFilePath + "/entity".replaceAll("/", ".");
+            voPackage = packageFilePath + "/vo".replaceAll("/", ".");
+            controllerPackage = packageFilePath + "/controller".replaceAll("/", ".");
+        } else {
             errLog(isEntity, isVo, isController);
             entityPackage = environment.getProperty(entityPackageName);
             voPackage = environment.getProperty(voPackageName);
@@ -207,9 +209,9 @@ public class Init {
         String str;
         while ((str = bufferedReader.readLine()) != null) {
             if (str.contains("initClass")) {
-                if(str.contains("version")){
+                if (str.contains("version")) {
                     str = "@EnableSimpleData(version = " + version + ")";
-                }else{
+                } else {
                     str = "@EnableSimpleData";
                 }
             }
@@ -237,11 +239,7 @@ public class Init {
                 "import org.springframework.web.bind.annotation.RestController;\n" +
                 "@RestController\n" +
                 "@RequestMapping(value = \"/" + lineToHump(entry.getKey().getTableName()) + "\")\n" +
-                "public class " + controllerName + " extends BaseController<" + entityName + "," + entityName + "VO>{\n" +
-                "\tpublic " + entityName + "Controller() {\n" +
-                "        super(" + entityName + ".class, " + entityName + "VO.class);\n" +
-                "\t}\n" +
-                "}";
+                "public class " + controllerName + " extends BaseController<" + entityName + "," + entityName + "VO>{\n}";
         String[] packageStr = controllerPackage.split("\\.");
         String fileName = System.getProperty("user.dir") + "/src/main/java/";
         for (String pack : packageStr) {
@@ -386,12 +384,12 @@ public class Init {
             manager.close();
             URL[] urls = new URL[]{new URL("file:/" + System.getProperty("user.dir") + "/target/classes")};
             ClassLoader classLoader = new URLClassLoader(urls);
-            Object obj = classLoader.loadClass(packageName + "." + className).newInstance();
+            classLoader.loadClass(packageName + "." + className).newInstance();
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
             log.error("Simple-Data : 找不到指定的文件,类初始化中断");
-            throw new LoopException("Simple-Data : 找不到指定的文件,类初始化中断");
+            System.exit(0);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InstantiationException e) {
