@@ -226,7 +226,7 @@ public class SqlUtil<T, D> {
             findFieldNum++;
             sql = sql + fieldName + operator;
             if (queryEnum == QueryEnum.like || queryEnum == QueryEnum.notLike) {
-                sql += "%" + fieldValue + "%";
+                sql += "'%" + fieldValue + "%'";
             } else {
                 sql += fieldValue;
             }

@@ -1,0 +1,77 @@
+###########环境依赖
+Mysql
+Jdk1.8及以上
+SpringBoot 2
+spring-jdbc jar包
+###########前置条件
+1.若需要软删除,乐观锁,启用禁用及创建修改时间支持,数据表中需要包含以下字段:
+    deleted(bit),disabled(bit),version(int),created_at(datetime),updated_at(datetime)
+###########注解配置
+@EnableSimpleData:
+    SpringBoot启动类加上此注解即可开启框架基础功能支持
+    属性:
+        initClass:是否根据数据源生成基础类(entity,vo,controller)
+        version:是否开启乐观锁支持
+@EnableCache:
+    SpringBoot启动类加上此注解即可开启框架数据缓存支持
+    属性:
+        value:缓存时长(s)
+@Id:
+    此注解加在entity字段上以标识id(默认id为数据表中第一个主键)
+###########配置文件
+simple-data.entity-package:xxx.xxx.xxx(entity生成路径)
+simple-data.vo-package:xxx.xxx.xxx(vo生成路径)
+simple-data.controller-package:xxx.xxx.xxx(controller生成路径)
+###########V1.0.0 版本内容
+1.根据数据源生成基础类(entity,vo,controller)
+2.controller实现基础增删改查
+3.数据缓存
+4.清除缓存接口
+5.乐观锁
+6.可继承异常拦截类ExceptionsHandler实现异常拦截
+###########接口文档
+1./save(vo):新增,请求方式为post
+2./delete/false/{id}:假删除,请求方式为delete(需满足前置条件1)
+3./delete/true/{id}:硬删除,请求方式为delete
+4./update(vo):修改,请求方式为put
+5./getById/{id}:根据id查询,请求方式为get
+6./getPage:条件分页查询,请求方式为get,具体请求示例如下:
+    localhost:8080/example/getPage?current=1&pageSize=10&queryNum=true&id=1
+    body:
+    [
+        {"id":"gt"},
+        ...
+    ],
+    [
+        {"id":"desc"},
+        ...
+    ]
+    以上请求即查询id大于(gt)1的根据id倒序(desc)列表,页码(current)为1,页面大小(pageSize)为10,返回值包含总数(queryNum);
+    页码默认为1,页面大小默认为10,返回值默认包含总数;
+    所有条件:
+        gt(大于),
+        ge(大于等于),
+        eq(等于),
+        le(小于等于),
+        lt(小于),
+        like(包含),
+        notEq(不等于),
+        notLike(不包含),
+        asc(正序),
+        desc(倒序);
+    注意事项:
+        body中的条件字段和排序字段需放在两个数组中传递,数组中可传多个条件
+7./disable/{id}:根据id禁用,请求方式为patch(需满足前置条件1)
+8./enable/{id}:根据id启用,请求方式为patch(需满足前置条件1)
+9./getCount:条件查询总量,和getPage类似,但是body中的参数需为以下形式
+    body:
+    {
+        "id":"gt",
+        "name":"eq",
+        ...
+    }
+10./batchSave(List<vo>):批量新增,请求方式为post
+11./batchDelete/true(List<Long> idList):批量硬删除,请求方式为delete
+12./batchDelete/false(List<Long> idList):批量软删除,请求方式为delete
+13./batchUpdate(List<vo>):批量修改,请求方式为put
+14./clearCache:清除该表缓存,请求方式为delete

@@ -80,8 +80,8 @@ public abstract class BaseController<T, D> {
     }
 
     @GetMapping(value = "/getPage")
-    public ResponseEntity<PageVO<D>> queryPage(PageQO pageQO, D qo, @RequestBody(required = false) List<Map<String, QueryEnum>> condition) {
-        return baseService.queryPage(pageQO, qo, condition);
+    public ResponseEntity<PageVO<D>> queryPage(PageQO pageQO, D vo, @RequestBody(required = false) List<Map<String, QueryEnum>> condition) {
+        return baseService.queryPage(pageQO, vo, condition);
     }
 
     @PatchMapping(value = "/disable/{id}")
@@ -120,7 +120,7 @@ public abstract class BaseController<T, D> {
     }
 
     @DeleteMapping(value = "/clearCache")
-    public ResponseEntity clearCache(){
+    public ResponseEntity clearCache() {
         return baseService.clearCache();
     }
 }
