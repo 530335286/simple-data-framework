@@ -11,6 +11,7 @@ import com.simpledata.frame.base.exceptions.derive.ExtendsException;
 import com.simpledata.frame.base.exceptions.derive.IdException;
 import com.simpledata.frame.base.exceptions.derive.NullException;
 import com.simpledata.frame.base.utils.SqlUtil;
+import com.simpledata.frame.base.values.Value;
 import com.simpledata.frame.config.Init;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,19 +34,17 @@ import java.util.*;
 
 public class BaseService<T, D> {
 
-    private boolean isCache;
+    public static boolean isCache;
 
     private SqlUtil<T, D> sqlUtil;
 
     private Map<String, CacheData<D>> cacheDataMap;
 
-    public JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
-    public BaseService(JdbcTemplate jdbcTemplate,Class entity,Class vo) {
-        Field[] fields = entity.getDeclaredFields();
+    public BaseService(JdbcTemplate jdbcTemplate, Class entity, Class vo) {
         this.jdbcTemplate = jdbcTemplate;
-        this.sqlUtil = new SqlUtil(entity, vo, this,fields);
-        this.isCache = (Init.cacheTime != null);
+        this.sqlUtil = new SqlUtil(entity, vo, this);
         this.cacheDataMap = new HashMap();
     }
 
@@ -117,7 +116,7 @@ public class BaseService<T, D> {
     public ResponseEntity update(D vo) {
         T entity = sqlUtil.classMapper.voTOEntity(vo);
         String idName = sqlUtil.id.substring(0, 1).toUpperCase() + sqlUtil.id.substring(1);
-        Method method = sqlUtil.entityClass.getMethod("get" + idName, null);
+        Method method = sqlUtil.entityClass.getMethod(Value.get + idName, null);
         Long id = (Long) method.invoke(entity, null);
         if (id == null || id == 0) {
             throw new IdException();
@@ -148,7 +147,7 @@ public class BaseService<T, D> {
                     if (field.isAnnotationPresent(Id.class)) {
                         String idName = field.getName();
                         idName = SqlUtil.getConvert(idName);
-                        Method method = sqlUtil.entityClass.getMethod("get" + idName);
+                        Method method = sqlUtil.entityClass.getMethod(Value.get + idName);
                         Long entityId = (Long) method.invoke(entity, null);
                         if (entityId == null || entityId == 0) {
                             ResponseEntity.ok(null);
@@ -176,7 +175,22 @@ public class BaseService<T, D> {
 
     }
 
-    public ResponseEntity<PageVO<D>> queryPage(PageQO pageQO, D qo, Map<String, QueryEnum> condition, Map<String, OrderEnum> orderEnumMap) {
+    public ResponseEntity<PageVO<D>> queryPage(PageQO pageQO, D qo, List<Map<String, QueryEnum>> conditions) {
+        Map<String, QueryEnum> condition = new HashMap<>();
+        Map<String, OrderEnum> orderEnumMap = new HashMap<>();
+        if (conditions != null) {
+            for (Map<String, QueryEnum> map : conditions) {
+                for (Map.Entry<String, QueryEnum> entry : map.entrySet()) {
+                    if (entry.getValue().getOperator().equals(QueryEnum.asc.getOperator())) {
+                        orderEnumMap.put(entry.getKey(), OrderEnum.Asc);
+                    } else if (entry.getValue().getOperator().equals(QueryEnum.desc.getOperator())) {
+                        orderEnumMap.put(entry.getKey(), OrderEnum.Desc);
+                    } else {
+                        condition.put(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
+        }
         if (null == pageQO) {
             pageQO = new PageQO();
         }
@@ -299,4 +313,8 @@ public class BaseService<T, D> {
         return ResponseEntity.ok().build();
     }
 
+    public ResponseEntity clearCache() {
+        this.cacheDataMap.clear();
+        return ResponseEntity.ok().build();
+    }
 }

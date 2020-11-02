@@ -1,6 +1,6 @@
 package com.simpledata.frame.base.handler;
 
-import com.simpledata.frame.base.exceptions.ApiException;
+import com.simpledata.frame.base.exceptions.SimpleException;
 import com.simpledata.frame.base.exceptions.derive.BadRequestException;
 import com.simpledata.frame.base.exceptions.derive.OkRequestException;
 import lombok.extern.log4j.Log4j2;
@@ -42,10 +42,10 @@ public abstract class ExceptionsHandler {
 
     /**
      * 自定义异常拦截
-     * @param apiException
+     * @param simpleException
      * @return
      */
     @ResponseBody
-    @ExceptionHandler({ApiException.class})
-    public abstract Object doApiException(ApiException apiException);
+    @ExceptionHandler({SimpleException.class})
+    public abstract Object doApiException(SimpleException simpleException);
 }

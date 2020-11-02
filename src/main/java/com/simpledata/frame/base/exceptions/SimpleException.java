@@ -1,6 +1,5 @@
 package com.simpledata.frame.base.exceptions;
 
-import lombok.Data;
 import org.springframework.http.HttpStatus;
 
 /***
@@ -9,11 +8,10 @@ import org.springframework.http.HttpStatus;
  * @version 0.0.1
  */
 
-@Data
-public class ApiException extends RuntimeException {
+public class SimpleException extends RuntimeException {
     private HttpStatus code;
 
-    protected ApiException(HttpStatus code, String message) {
+    protected SimpleException(HttpStatus code, String message) {
         super(message);
         this.code = code;
     }

@@ -1,13 +1,10 @@
 package com.simpledata.frame.config;
 
-import com.simpledata.frame.base.exceptions.ApiException;
 import com.simpledata.frame.base.exceptions.derive.LoopException;
-import com.simpledata.frame.base.handler.ExceptionsHandler;
 import com.simpledata.frame.base.utils.ClassUtil;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -126,7 +123,7 @@ public class Init {
         try {
             isInit = ClassUtil.loop(file, "");
         } catch (LoopException loopException) {
-            isInit = true;
+            isInit = loopException.getInit();
         } catch (Exception e) {
             e.printStackTrace();
         }

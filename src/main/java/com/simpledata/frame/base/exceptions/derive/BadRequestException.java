@@ -1,9 +1,9 @@
 package com.simpledata.frame.base.exceptions.derive;
 
-import com.simpledata.frame.base.exceptions.ApiException;
+import com.simpledata.frame.base.exceptions.SimpleException;
 import org.springframework.http.HttpStatus;
 
-public class BadRequestException extends ApiException {
+public class BadRequestException extends SimpleException {
 
     public BadRequestException() {
         super(HttpStatus.INTERNAL_SERVER_ERROR, "Simple-Data : 执行失败");

@@ -37,20 +37,21 @@ public abstract class BaseController<T, D> {
     private JdbcTemplate jdbcTemplate;
 
     private BaseService<T, D> baseService;
-    Class<T> tType;
-    Class<D> dType;
 
-    public BaseController() {
+    private Class<T> entity;
+    private Class<D> vo;
+
+    protected BaseController() {
         Type type = this.getClass().getGenericSuperclass();
         ParameterizedType parameterizedType = (ParameterizedType) type;
         Type[] t = parameterizedType.getActualTypeArguments();
-        tType = (Class<T>) t[0];
-        dType = (Class<D>) t[1];
+        entity = (Class<T>) t[0];
+        vo = (Class<D>) t[1];
     }
 
     @PostConstruct
-    public void init() {
-        baseService = new BaseService<>(jdbcTemplate, tType, dType);
+    void init() {
+        baseService = new BaseService(jdbcTemplate, entity, vo);
     }
 
     @PostMapping(value = "/save")
@@ -80,24 +81,7 @@ public abstract class BaseController<T, D> {
 
     @GetMapping(value = "/getPage")
     public ResponseEntity<PageVO<D>> queryPage(PageQO pageQO, D qo, @RequestBody(required = false) List<Map<String, QueryEnum>> condition) {
-        Map<String, QueryEnum> queryEnumMap = new HashMap<>();
-        Map<String, OrderEnum> orderEnumMap = new HashMap<>();
-        if (condition != null) {
-            for (Map<String, QueryEnum> map : condition) {
-                for (Map.Entry<String, QueryEnum> entry : map.entrySet()) {
-                    if (entry.getValue().getOperator().equals("asc")) {
-                        orderEnumMap.put(entry.getKey(), OrderEnum.Asc);
-                        condition.remove(entry.getKey());
-                    } else if (entry.getValue().getOperator().equals("desc")) {
-                        orderEnumMap.put(entry.getKey(), OrderEnum.Desc);
-                        condition.remove(entry.getKey());
-                    } else {
-                        queryEnumMap.put(entry.getKey(), entry.getValue());
-                    }
-                }
-            }
-        }
-        return baseService.queryPage(pageQO, qo, queryEnumMap, orderEnumMap);
+        return baseService.queryPage(pageQO, qo, condition);
     }
 
     @PatchMapping(value = "/disable/{id}")
@@ -133,5 +117,10 @@ public abstract class BaseController<T, D> {
     @PutMapping(value = "/batchUpdate")
     public ResponseEntity batchUpdate(@RequestBody List<D> voList) {
         return baseService.batchUpdate(voList);
+    }
+
+    @DeleteMapping(value = "/clearCache")
+    public ResponseEntity clearCache(){
+        return baseService.clearCache();
     }
 }

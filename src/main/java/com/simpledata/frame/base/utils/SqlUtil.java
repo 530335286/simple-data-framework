@@ -10,6 +10,7 @@ import com.simpledata.frame.base.exceptions.derive.ExtendsException;
 import com.simpledata.frame.base.exceptions.derive.NullException;
 import com.simpledata.frame.base.mapper.ClassMapper;
 import com.simpledata.frame.base.service.BaseService;
+import com.simpledata.frame.base.values.Value;
 import com.simpledata.frame.config.Init;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
@@ -31,11 +32,11 @@ public class SqlUtil<T, D> {
 
     public Class entityClass;
 
-    public Class voClass;
+    private Class voClass;
 
-    public String tableName;
+    private String tableName;
 
-    public String idName;
+    private String idName;
 
     public String id;
 
@@ -45,27 +46,40 @@ public class SqlUtil<T, D> {
 
     private BaseService<T, D> service;
 
-    private Field [] fields;
+    private Field[] fields;
+
+    private Method getVersion;
+
+    private Method[] methods;
 
     private SqlUtil() {
 
     }
 
     @SneakyThrows
-    public SqlUtil(Class entity, Class vo, BaseService service,Field [] fields) {
+    public SqlUtil(Class entity, Class vo, BaseService service) {
         this.entityClass = entity;
         this.voClass = vo;
         this.service = service;
         this.tableName = SqlUtil.humpToUnderline(this.entityClass.getSimpleName()).toLowerCase();
         this.classMapper = new ClassMapper(this.entityClass, this.voClass);
         this.isExtends = (T) entityClass.newInstance() instanceof BaseEntity;
-        this.fields=fields;
-        for (Field field : entity.getDeclaredFields()) {
+        this.fields = entityClass.getDeclaredFields();
+        if (isExtends) {
+            this.fields = this.concat(fields, BaseEntity.class.getDeclaredFields());
+            this.getVersion = entityClass.getMethod(Value.getVersion, null);
+        }
+        this.methods = new Method[this.fields.length];
+        for (int i = 0; i < fields.length; i++) {
+            Field field = fields[i];
+            String fieldName = field.getName();
+            this.methods[i] = entityClass.getMethod(Value.get + getConvert(fieldName), null);
             if (field.isAnnotationPresent(Id.class)) {
-                this.id = field.getName();
+                this.id = fieldName;
                 this.idName = SqlUtil.humpToUnderline(this.id);
             }
         }
+
     }
 
     public Field[] concat(Field[] first, Field[] second) {
@@ -77,10 +91,10 @@ public class SqlUtil<T, D> {
     public static String humpToUnderline(String para) {
         StringBuilder sb = new StringBuilder(para);
         int temp = 0;
-        if (!para.contains("_")) {
+        if (!para.contains(Value.underLine)) {
             for (int i = 1; i < para.length(); ++i) {
                 if (Character.isUpperCase(para.charAt(i))) {
-                    sb.insert(i + temp, "_");
+                    sb.insert(i + temp, Value.underLine);
                     ++temp;
                 }
             }
@@ -95,46 +109,8 @@ public class SqlUtil<T, D> {
         return first + after;
     }
 
-
-    public static boolean isBaseType(Object object) {
-        Class className = object.getClass();
-        if (className.equals(java.lang.Integer.class) ||
-                className.equals(java.lang.Byte.class) ||
-                className.equals(java.lang.Long.class) ||
-                className.equals(java.lang.Double.class) ||
-                className.equals(java.lang.Float.class) ||
-                className.equals(java.lang.Character.class) ||
-                className.equals(java.lang.Short.class)) {
-            return true;
-        }
-        return false;
-    }
-
-    public static boolean isBaseDefaultValue(Object object) {
-        Class className = object.getClass();
-        if (className.equals(java.lang.Integer.class)) {
-            return (int) object == 0;
-        } else if (className.equals(java.lang.Byte.class)) {
-            return (byte) object == 0;
-        } else if (className.equals(java.lang.Long.class)) {
-            return (long) object == 0L;
-        } else if (className.equals(java.lang.Double.class)) {
-            return (double) object == 0.0d;
-        } else if (className.equals(java.lang.Float.class)) {
-            return (float) object == 0.0f;
-        } else if (className.equals(java.lang.Character.class)) {
-            return (char) object == '\u0000';
-        } else if (className.equals(java.lang.Short.class)) {
-            return (short) object == 0;
-        }
-        return false;
-    }
-
     @SneakyThrows
     private String[] generateField(List<T> valueList) {
-        if (isExtends) {
-            fields = this.concat(fields, BaseEntity.class.getDeclaredFields());
-        }
         String fieldLine = "";
         String valueLine = "values";
         String[] fieldAndValue = new String[2];
@@ -145,8 +121,7 @@ public class SqlUtil<T, D> {
                 Field field = fields[i];
                 String fieldName = field.getName();
                 if (!fieldName.equalsIgnoreCase(idName)) {
-                    String methodName = "get" + getConvert(fieldName);
-                    Method method = this.entityClass.getMethod(methodName, null);
+                    Method method = methods[i];
                     Object obj = method.invoke(value, null);
                     if (j == 0) {
                         fieldName = this.humpToUnderline(fieldName);
@@ -177,8 +152,8 @@ public class SqlUtil<T, D> {
             Field field = fields[i];
             String fieldName = field.getName();
             if (!fieldName.equalsIgnoreCase(idName)) {
-                Method method = this.entityClass.getMethod("get" + getConvert(fieldName));
-                Object obj = method.invoke(value, (Object[]) null);
+                Method method = methods[i];
+                Object obj = method.invoke(value, null);
                 if (null != obj) {
                     fieldName = this.humpToUnderline(fieldName);
                     if (field.getType() == Boolean.class) {
@@ -199,8 +174,7 @@ public class SqlUtil<T, D> {
             throw new NullException();
         }
         entity = classMapper.voTOEntity(service.queryById(id).getBody());
-        Method method = entityClass.getMethod("getVersion", null);
-        Long version = (Long) method.invoke(entity, null);
+        Long version = (Long) getVersion.invoke(entity, null);
         sql += " and version = " + version;
         return sql;
     }
@@ -229,7 +203,7 @@ public class SqlUtil<T, D> {
             String upName = field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
             Method method = null;
             try {
-                method = entityClass.getMethod("get" + upName, null);
+                method = entityClass.getMethod(Value.get + upName, null);
             } catch (NoSuchMethodException e) {
                 continue;
             }
@@ -269,7 +243,7 @@ public class SqlUtil<T, D> {
             String fieldName = entry.getKey();
             fieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
             try {
-                entityClass.getMethod("get" + fieldName, null);
+                entityClass.getMethod(Value.get + fieldName, null);
                 String underName = humpToUnderline(entry.getKey());
                 OrderEnum orderEnum = entry.getValue();
                 if (orderEnum == null) {

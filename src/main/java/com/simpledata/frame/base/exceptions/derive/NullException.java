@@ -1,9 +1,9 @@
 package com.simpledata.frame.base.exceptions.derive;
 
-import com.simpledata.frame.base.exceptions.ApiException;
+import com.simpledata.frame.base.exceptions.SimpleException;
 import org.springframework.http.HttpStatus;
 
-public class NullException extends ApiException {
+public class NullException extends SimpleException {
     public NullException(String message) {
         super(HttpStatus.NOT_FOUND, message);
     }

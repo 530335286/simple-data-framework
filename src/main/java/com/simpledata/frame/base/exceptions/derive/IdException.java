@@ -1,9 +1,9 @@
 package com.simpledata.frame.base.exceptions.derive;
 
-import com.simpledata.frame.base.exceptions.ApiException;
+import com.simpledata.frame.base.exceptions.SimpleException;
 import org.springframework.http.HttpStatus;
 
-public class IdException extends ApiException {
+public class IdException extends SimpleException {
     public IdException(String message) {
         super(HttpStatus.BAD_REQUEST, message);
     }
