@@ -44,6 +44,8 @@ public class Init {
 
     public static boolean version = false;
 
+    public static boolean isLog = false;
+
     private static Pattern linePattern = Pattern.compile("_(\\w)");
 
     private static String idName = null;
