@@ -58,8 +58,7 @@ public class LogProcess {
             }
         }
         if (Init.isLog) {
-            log.info("Simple-Data : " + now + ": 接口: " + methodName + " 参数: " + (args != null ? JSONObject.valueToString(params) : null) + " 返回值: " + (result != null ? JSONObject.valueToString(result) : null
-            ));
+            log.info("Simple-Data : " + now + ": 接口: " + methodName + " 参数: " + (args != null ? JSONObject.valueToString(params) : null) + " 返回值: " + (result != null ? JSONObject.valueToString(result) : null));
         }
         return result;
     }
