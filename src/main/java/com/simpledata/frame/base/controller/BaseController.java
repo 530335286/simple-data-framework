@@ -5,6 +5,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 
+import com.simpledata.frame.base.annotations.Log;
 import com.simpledata.frame.base.entity.qo.PageQO;
 import com.simpledata.frame.base.entity.vo.PageVO;
 import com.simpledata.frame.base.enums.OrderEnum;
@@ -55,71 +56,85 @@ public abstract class BaseController<T, D> {
     }
 
     @PostMapping(value = "/save")
+    @Log(value = "/save")
     public ResponseEntity save(@RequestBody D vo) {
         return baseService.save(vo);
     }
 
     @DeleteMapping(value = "/delete/false/{id}")
+    @Log(value = "/delete/false/{id}")
     public ResponseEntity deleteFalse(@PathVariable Long id) {
         return baseService.deleteFalse(id);
     }
 
     @DeleteMapping(value = "/delete/true/{id}")
+    @Log(value = "/delete/true/{id}")
     public ResponseEntity deleteTrue(@PathVariable Long id) {
         return baseService.deleteTrue(id);
     }
 
     @PutMapping(value = "/update")
+    @Log(value = "/update")
     public ResponseEntity update(@RequestBody D vo) {
         return baseService.update(vo);
     }
 
     @GetMapping(value = "/getById/{id}")
+    @Log(value = "/getById/{id}")
     public ResponseEntity<D> queryById(@PathVariable Long id) {
         return baseService.queryById(id);
     }
 
     @GetMapping(value = "/getPage")
+    @Log(value = "/getPage")
     public ResponseEntity<PageVO<D>> queryPage(PageQO pageQO, D vo, @RequestBody(required = false) List<Map<String, QueryEnum>> condition) {
         return baseService.queryPage(pageQO, vo, condition);
     }
 
     @PatchMapping(value = "/disable/{id}")
+    @Log(value = "/disable/{id}")
     public ResponseEntity disable(@PathVariable Long id) {
         return baseService.disable(id);
     }
 
     @PatchMapping(value = "/enable/{id}")
+    @Log(value = "/enable/{id}")
     public ResponseEntity enable(@PathVariable Long id) {
         return baseService.enable(id);
     }
 
     @GetMapping(value = "/getCount")
+    @Log(value = "/getCount")
     public ResponseEntity<Long> queryCount(D qo, @RequestBody(required = false) Map<String, QueryEnum> condition) {
         return baseService.queryCount(qo, condition);
     }
 
     @PostMapping(value = "/batchSave")
+    @Log(value = "/batchSave")
     public ResponseEntity batchSave(@RequestBody List<D> voList) {
         return baseService.batchSave(voList);
     }
 
     @DeleteMapping(value = "/batchDelete/true")
+    @Log(value = "/batchDelete/true")
     public ResponseEntity batchDeleteTrue(@RequestBody List<Long> idList) {
         return baseService.batchDeleteTrue(idList);
     }
 
     @DeleteMapping(value = "/batchDelete/false")
+    @Log(value = "/batchDelete/false")
     public ResponseEntity batchDeleteFalse(@RequestBody List<Long> idList) {
         return baseService.batchDeleteFalse(idList);
     }
 
     @PutMapping(value = "/batchUpdate")
+    @Log(value = "/batchUpdate")
     public ResponseEntity batchUpdate(@RequestBody List<D> voList) {
         return baseService.batchUpdate(voList);
     }
 
     @DeleteMapping(value = "/clearCache")
+    @Log(value = "/clearCache")
     public ResponseEntity clearCache() {
         return baseService.clearCache();
     }

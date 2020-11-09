@@ -1,6 +1,7 @@
 package com.simpledata.frame.base.utils;
 
 import com.simpledata.frame.base.annotations.EnableCache;
+import com.simpledata.frame.base.annotations.EnableLog;
 import com.simpledata.frame.base.annotations.EnableSimpleData;
 import com.simpledata.frame.base.exceptions.derive.LoopException;
 import com.simpledata.frame.base.service.BaseService;
@@ -49,6 +50,9 @@ public class ClassUtil {
                 } else {
                     Init.cacheTime = null;
                     BaseService.isCache = false;
+                }
+                if (aClass.isAnnotationPresent(EnableLog.class)) {
+                    Init.isLog = true;
                 }
                 result.put("continue", false);
                 result.put("init", aClass.getAnnotation(EnableSimpleData.class).initClass());
