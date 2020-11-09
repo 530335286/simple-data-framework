@@ -10,6 +10,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -19,7 +20,7 @@ import java.lang.reflect.Parameter;
 @Log4j2
 public class LogProcess {
 
-    @Around(value = "execution(* com.simpledata.frame.base.controller.*.*(..))")
+    @Around(value = "@annotation(com.simpledata.frame.base.annotations.Log)")
     public Object doLog(ProceedingJoinPoint joinPoint) {
         Object result = null;
         String methodName = null;
@@ -33,7 +34,7 @@ public class LogProcess {
             Parameter[] parameters = method.getParameters();
             Class<?> controller = joinPoint.getTarget().getClass();
             methodName = (controller.isAnnotationPresent(Log.class) ? controller.getAnnotation(Log.class).value() : controller.getName()) + " : " +
-                    (method.isAnnotationPresent(Log.class) ? method.getAnnotation(Log.class).value() : method.getName());
+                    (StringUtils.isEmpty(method.getAnnotation(Log.class).value()) ? method.getName() : method.getAnnotation(Log.class).value());
             args = joinPoint.getArgs();
             params = new Object[parameters.length];
             for (int i = 0; i < parameters.length; i++) {

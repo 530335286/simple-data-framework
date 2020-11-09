@@ -8,7 +8,6 @@ import java.util.*;
 import com.simpledata.frame.base.annotations.Log;
 import com.simpledata.frame.base.entity.qo.PageQO;
 import com.simpledata.frame.base.entity.vo.PageVO;
-import com.simpledata.frame.base.enums.OrderEnum;
 import com.simpledata.frame.base.enums.QueryEnum;
 import com.simpledata.frame.base.service.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
