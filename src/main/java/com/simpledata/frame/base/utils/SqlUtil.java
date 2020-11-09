@@ -14,7 +14,6 @@ import com.simpledata.frame.base.values.Value;
 import com.simpledata.frame.config.Init;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
