@@ -54,11 +54,11 @@ public class LogProcess {
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             if (Init.isLog) {
-                log.error("Simple-Data : " + now + " 接口: " + methodName + " 参数: " + (args != null ? JSONObject.valueToString(params) : null) + " 异常信息: " + throwable.getMessage());
+                log.error("Simple-Data : " + now + ": 接口: " + methodName + " 参数: " + (args != null ? JSONObject.valueToString(params) : null) + " 异常信息: " + throwable.getMessage());
             }
         }
         if (Init.isLog) {
-            log.info("Simple-Data : " + now + " 接口: " + methodName + " 参数: " + (args != null ? JSONObject.valueToString(params) : null) + " 返回值: " + (result != null ? JSONObject.valueToString(result) : null
+            log.info("Simple-Data : " + now + ": 接口: " + methodName + " 参数: " + (args != null ? JSONObject.valueToString(params) : null) + " 返回值: " + (result != null ? JSONObject.valueToString(result) : null
             ));
         }
         return result;
