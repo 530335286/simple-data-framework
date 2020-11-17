@@ -30,7 +30,8 @@ public class SqlTable {
             case "bit":
                 fieldType = "Boolean";
                 break;
-            case "id":
+            case "int":
+            case "bigint":
                 fieldType = "Long";
                 break;
             default:
