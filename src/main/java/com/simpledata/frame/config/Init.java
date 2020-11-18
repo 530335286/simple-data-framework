@@ -220,7 +220,7 @@ public class Init {
         BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(MainPackageFileName)));
         bufferedWriter.write(MainJavaContent.toString());
         bufferedWriter.flush();
-        log.info("Simple-Data : 类初始化完成 请刷新目录查看");
+        log.info("Simple-Data : 类初始化完成,请刷新目录查看,重启项目接口生效");
         System.exit(0);
     }
 
