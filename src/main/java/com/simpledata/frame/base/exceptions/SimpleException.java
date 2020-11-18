@@ -3,9 +3,9 @@ package com.simpledata.frame.base.exceptions;
 import org.springframework.http.HttpStatus;
 
 /***
- * simple-data
- * @author zcw
- * @version 0.0.1
+ * simple-data1.0
+ * @author zcw && Jiuchen
+ * @version 1.0
  */
 
 public class SimpleException extends RuntimeException {

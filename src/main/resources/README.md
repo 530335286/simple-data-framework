@@ -1,7 +1,7 @@
 ###########环境依赖
 Mysql
 Jdk1.8及以上
-SpringBoot 2
+SpringBoot 2.x
 spring-jdbc jar包
 ###########前置条件
 1.若需要软删除,乐观锁,启用禁用及创建修改时间支持,数据表中需要包含以下字段:
@@ -22,7 +22,7 @@ spring-jdbc jar包
 simple-data.entity-package:xxx.xxx.xxx(entity生成路径)
 simple-data.vo-package:xxx.xxx.xxx(vo生成路径)
 simple-data.controller-package:xxx.xxx.xxx(controller生成路径)
-###########V1.0.0 版本内容
+###########V1.0 版本内容
 1.根据数据源生成基础类(entity,vo,controller)
 2.controller实现基础增删改查
 3.数据缓存

@@ -4,8 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /***
- * simple-data
- * @author zcw
+ * simple-data1.0
+ * @author zcw && Jiuchen
  * @version 1.0
  */
 

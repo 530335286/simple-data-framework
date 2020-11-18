@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /***
- * simple-data
- * @author zcw
- * @version 0.0.1
+ * simple-data1.0
+ * @author zcw && Jiuchen
+ * @version 1.0
  */
 
 @ControllerAdvice(basePackages = "com.simpledata.frame.controller")

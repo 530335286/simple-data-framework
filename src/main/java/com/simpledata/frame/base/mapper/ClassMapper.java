@@ -7,9 +7,9 @@ import lombok.SneakyThrows;
 import org.springframework.beans.BeanUtils;
 
 /***
- * simple-data
- * @author zcw
- * @version 0.0.1
+ * simple-data1.0
+ * @author zcw && Jiuchen
+ * @version 1.0
  */
 
 public class ClassMapper<T, D> {

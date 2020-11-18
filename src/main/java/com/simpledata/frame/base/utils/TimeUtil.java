@@ -4,9 +4,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /***
- * simple-data
- * @author zcw
- * @version 0.0.1
+ * simple-data1.0
+ * @author zcw && Jiuchen
+ * @version 1.0
  */
 
 public class TimeUtil {

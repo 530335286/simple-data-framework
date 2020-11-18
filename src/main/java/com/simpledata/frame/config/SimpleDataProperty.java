@@ -4,9 +4,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /***
- * simple-data 配置文件提示
+ * simple-data1.0 配置文件提示
  * @author Jiuchen
- * @version 0.0.1
+ * @version 1.0
  */
 @Component
 @ConfigurationProperties(prefix = "simple-data")
