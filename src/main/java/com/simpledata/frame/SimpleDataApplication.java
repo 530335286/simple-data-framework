@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /***
  * simple-data1.0
- * @author zcw  &&  Jiuchen
+ * @author zcw && Jiuchen
  * @version 1.0
  */
 
