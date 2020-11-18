@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /***
  * simple-data
  * @author zcw
- * @version 0.0.1
+ * @version 1.0
  */
 
 @SpringBootApplication

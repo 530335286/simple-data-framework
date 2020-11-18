@@ -48,7 +48,7 @@ public class Init {
 
     private static Pattern linePattern = Pattern.compile("_(\\w)");
 
-    private static String idName = null;
+    private static String idName = "";
 
     private static boolean flag = true;
 
@@ -171,15 +171,17 @@ public class Init {
         String sql = "show tables";
         List<Map<String, Object>> list = jdbcTemplate.queryForList(sql);
         list.forEach(table -> {
+            String tableName = "";
             for (Map.Entry<String, Object> entry : table.entrySet()) {
-                String tableName = (String) entry.getValue();
+                tableName = (String) entry.getValue();
                 List<SqlTable> sqlTables = jdbcTemplate.query("show full fields from " + tableName, new RowMapper<SqlTable>() {
                     @Override
                     public SqlTable mapRow(ResultSet resultSet, int rowNum) throws SQLException {
                         SqlTable sqlTable = new SqlTable();
                         sqlTable.setFieldName(resultSet.getString("Field"));
                         sqlTable.setFieldType(resultSet.getString("Type"));
-                        if (resultSet.getString("Key").equals("PRI")) {
+                        String key = resultSet.getString("Key");
+                        if (key.equals("PRI")) {
                             if (flag) {
                                 idName = resultSet.getString("Field");
                                 flag = false;
@@ -193,6 +195,11 @@ public class Init {
                 tableAndId.setIdName(lineToHump(idName));
                 tableInfo.put(tableAndId, sqlTables);
             }
+            if(idName.equals("")){
+                log.error("Simple-Data : "+tableName+"表没有主键 类初始化终止");
+                System.exit(1);
+            }
+            idName = "";
             flag = true;
         });
         for (Map.Entry<TableAndId, List<SqlTable>> entry : tableInfo.entrySet()) {
