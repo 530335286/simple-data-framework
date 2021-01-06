@@ -32,6 +32,7 @@ public class SqlTable {
                 break;
             case "int":
             case "bigint":
+            case "id":
                 fieldType = "Long";
                 break;
             default:
