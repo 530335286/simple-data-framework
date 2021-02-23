@@ -83,10 +83,11 @@ public class BaseService<T, D> {
             throw new IdException();
         }
         if (sqlUtil.isExtends) {
-            T entity = sqlUtil.classMapper.voTOEntity(queryById(id).getBody());
-            if (entity == null) {
+            D vo = queryById(id).getBody();
+            if (vo == null) {
                 throw new NullException();
             }
+            T entity = sqlUtil.classMapper.voTOEntity(vo);
             List<T> value = new ArrayList();
             value.add(entity);
             String sql = sqlUtil.generateSql(SqlEnum.DeleteFalse, value, id, null, null, null);
