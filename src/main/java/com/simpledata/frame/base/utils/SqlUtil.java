@@ -326,26 +326,26 @@ public class SqlUtil<T, D> {
             case Disable:
                 if (Init.version) {
                     if (isExtends) {
-                        sql = "update " + this.tableName + " set disabled = true,version = version + 1 , updated_at = \'" + TimeUtil.Now() + "\' where " + idName + " = " + id;
+                        sql = "update " + this.tableName + " set enable = false,version = version + 1 , updated_at = \'" + TimeUtil.Now() + "\' where " + idName + " = " + id;
                         sql = updateVersion(sql, id, value.get(0));
                     } else {
                         throw new ExtendsException();
                     }
                 } else {
-                    sql = "update " + this.tableName + " set disabled = true where " + idName + " = " + id;
+                    sql = "update " + this.tableName + " set enable = false where " + idName + " = " + id;
                 }
                 sql = isDelete(sql);
                 break;
             case Enable:
                 if (Init.version) {
                     if (isExtends) {
-                        sql = "update " + this.tableName + " set disabled = false,version = version + 1 , updated_at = \'" + TimeUtil.Now() + "\' where " + idName + " = " + id;
+                        sql = "update " + this.tableName + " set enable = true,version = version + 1 , updated_at = \'" + TimeUtil.Now() + "\' where " + idName + " = " + id;
                         sql = updateVersion(sql, id, value.get(0));
                     } else {
                         throw new ExtendsException();
                     }
                 } else {
-                    sql = "update " + this.tableName + " set disabled = false where " + idName + " = " + id;
+                    sql = "update " + this.tableName + " set enable = true where " + idName + " = " + id;
                 }
                 sql = isDelete(sql);
                 break;
