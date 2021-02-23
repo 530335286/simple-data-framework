@@ -13,7 +13,7 @@ import lombok.Data;
 public class BaseVO {
     private String createdAt = TimeUtil.Now();
     private String updatedAt = TimeUtil.Now();
-    private Boolean disabled = false;
+    private Boolean enable = true;
     private Boolean deleted = false;
     private Long version = 0L;
 }

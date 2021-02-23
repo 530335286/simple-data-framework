@@ -123,7 +123,7 @@ public class SqlUtil<T, D> {
                     Method method = methods[i];
                     Object obj = method.invoke(value, null);
                     if (j == 0) {
-                        fieldName = this.humpToUnderline(fieldName);
+                        fieldName = humpToUnderline(fieldName);
                         fieldLine = fieldLine + fieldName + ",";
                     }
                     if (field.getType() == Boolean.class) {
