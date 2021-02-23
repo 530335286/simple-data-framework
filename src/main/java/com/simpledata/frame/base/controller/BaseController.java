@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -58,7 +59,7 @@ public abstract class BaseController<T, D> {
     @PostMapping(value = "/save")
     @Log(value = "/save")
     @Operation(summary = "新增")
-    public ResponseEntity save(@RequestBody D vo) {
+    public ResponseEntity save(@RequestBody @Validated D vo) {
         return baseService.save(vo);
     }
 
@@ -79,7 +80,7 @@ public abstract class BaseController<T, D> {
     @PutMapping(value = "/update")
     @Log(value = "/update")
     @Operation(summary = "更新")
-    public ResponseEntity update(@RequestBody D vo) {
+    public ResponseEntity update(@RequestBody @Validated D vo) {
         return baseService.update(vo);
     }
 
