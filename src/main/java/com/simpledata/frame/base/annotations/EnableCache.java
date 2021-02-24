@@ -14,7 +14,8 @@ import java.lang.annotation.*;
 public @interface EnableCache {
     /**
      * 缓存有效时间(s)
+     *
      * @return
      */
-    long value() default 600l;
+    long value() default 600L;
 }
