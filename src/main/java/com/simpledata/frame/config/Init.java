@@ -2,6 +2,7 @@ package com.simpledata.frame.config;
 
 import com.simpledata.frame.base.exceptions.derive.LoopException;
 import com.simpledata.frame.base.utils.ClassUtil;
+import com.simpledata.frame.base.values.Value;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,35 +85,35 @@ public class Init {
             return;
         }
         if (!isEntity && !isVo && !isController) {
-            log.error("Simple-Data : 请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
-            log.error("Simple-Data : 请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
-            log.error("Simple-Data : 请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
+            log.error(Value.simple + "请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
+            log.error(Value.simple + "请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
+            log.error(Value.simple + "请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
             System.exit(0);
         }
         if (!isEntity && !isVo) {
-            log.error("Simple-Data : 请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
-            log.error("Simple-Data : 请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
+            log.error(Value.simple + "请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
+            log.error(Value.simple + "请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
             System.exit(0);
         }
         if (!isVo && !isController) {
-            log.error("Simple-Data : 请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
-            log.error("Simple-Data : 请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
+            log.error(Value.simple + "请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
+            log.error(Value.simple + "请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
             System.exit(0);
         }
         if (!isEntity && !isController) {
-            log.error("Simple-Data : 请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
-            log.error("Simple-Data : 请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
+            log.error(Value.simple + "请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
+            log.error(Value.simple + "请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
             System.exit(0);
         }
         if (!isEntity) {
-            log.error("Simple-Data : 请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
+            log.error(Value.simple + "请配置实体类路径:" + entityPackageName + ":xxx.xxx.xxx");
             System.exit(0);
         }
         if (!isVo) {
-            log.error("Simple-Data : 请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
+            log.error(Value.simple + "请配置vo路径:" + voPackageName + ":xxx.xxx.xxx");
             System.exit(0);
         }
-        log.error("Simple-Data : 请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
+        log.error(Value.simple + "请配置controller路径:" + controllerPackageName + ":xxx.xxx.xxx");
         System.exit(0);
     }
 
@@ -163,11 +164,11 @@ public class Init {
             controllerPackage = environment.getProperty(controllerPackageName);
         }
         Map<TableAndId, List<SqlTable>> tableInfo = new HashMap();
-        baseFields.add("createdAt");
-        baseFields.add("updatedAt");
-        baseFields.add("disabled");
-        baseFields.add("deleted");
-        baseFields.add("version");
+        baseFields.add(Value.createdAt);
+        baseFields.add(Value.updatedAt);
+        baseFields.add(Value.deleted);
+        baseFields.add(Value.enable);
+        baseFields.add(Value.version);
         String sql = "show tables";
         List<Map<String, Object>> list = jdbcTemplate.queryForList(sql);
         list.forEach(table -> {
@@ -195,8 +196,8 @@ public class Init {
                 tableAndId.setIdName(lineToHump(idName));
                 tableInfo.put(tableAndId, sqlTables);
             }
-            if(idName.equals("")){
-                log.error("Simple-Data : "+tableName+"表没有主键 类初始化终止");
+            if (idName.equals("")) {
+                log.error(Value.simple  + tableName + "表没有主键 类初始化终止");
                 System.exit(1);
             }
             idName = "";
@@ -215,7 +216,7 @@ public class Init {
         String str;
         while ((str = bufferedReader.readLine()) != null) {
             if (str.contains("initClass")) {
-                if (str.contains("version")) {
+                if (str.contains(Value.version)) {
                     str = "@EnableSimpleData(version = " + version + ")";
                 } else {
                     str = "@EnableSimpleData";
@@ -227,7 +228,7 @@ public class Init {
         BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(MainPackageFileName)));
         bufferedWriter.write(MainJavaContent.toString());
         bufferedWriter.flush();
-        log.info("Simple-Data : 类初始化完成,请刷新目录查看,重启项目接口生效");
+        log.info(Value.simple + "类初始化完成,请刷新目录查看,重启项目接口生效");
         System.exit(0);
     }
 
@@ -394,7 +395,7 @@ public class Init {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
-            log.error("Simple-Data : 找不到指定的文件,类初始化中断");
+            log.error(Value.simple + "找不到指定的文件,类初始化中断");
             System.exit(0);
         } catch (IOException e) {
             e.printStackTrace();

@@ -1,5 +1,6 @@
 package com.simpledata.frame.base.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.simpledata.frame.base.utils.TimeUtil;
 import lombok.Data;
 
@@ -11,9 +12,14 @@ import lombok.Data;
 
 @Data
 public class BaseEntity {
+    @JsonIgnore
     private String createdAt = TimeUtil.Now();
+    @JsonIgnore
     private String updatedAt = TimeUtil.Now();
+    @JsonIgnore
     private Boolean enable = true;
+    @JsonIgnore
     private Boolean deleted = false;
+    @JsonIgnore
     private Long version = 0L;
 }

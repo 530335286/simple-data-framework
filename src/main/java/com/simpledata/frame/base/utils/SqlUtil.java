@@ -10,6 +10,7 @@ import com.simpledata.frame.base.exceptions.derive.ExtendsException;
 import com.simpledata.frame.base.exceptions.derive.NullException;
 import com.simpledata.frame.base.mapper.ClassMapper;
 import com.simpledata.frame.base.service.BaseService;
+import com.simpledata.frame.base.values.SqlValues;
 import com.simpledata.frame.base.values.Value;
 import com.simpledata.frame.config.Init;
 import lombok.SneakyThrows;
@@ -62,7 +63,7 @@ public class SqlUtil<T, D> {
         this.service = service;
         this.tableName = SqlUtil.humpToUnderline(this.entityClass.getSimpleName()).toLowerCase();
         this.classMapper = new ClassMapper(this.entityClass, this.voClass);
-        this.isExtends = (T) entityClass.newInstance() instanceof BaseEntity;
+        this.isExtends = entityClass.newInstance() instanceof BaseEntity;
         this.fields = entityClass.getDeclaredFields();
         if (isExtends) {
             this.fields = this.concat(fields, BaseEntity.class.getDeclaredFields());
@@ -157,11 +158,11 @@ public class SqlUtil<T, D> {
                 Method method = methods[i];
                 Object obj = method.invoke(value, null);
                 if (null != obj) {
-                    fieldName = this.humpToUnderline(fieldName);
+                    fieldName = humpToUnderline(fieldName);
                     if (field.getType() == Boolean.class) {
-                        sql = sql + fieldName + "=" + obj + ",";
+                        sql = sql + fieldName + Value.eq + obj + Value.comma;
                     } else {
-                        sql = sql + fieldName + "='" + obj + "',";
+                        sql = sql + fieldName + Value.eq + "'" + obj + "'" + Value.comma;
                     }
                 }
             }
@@ -175,15 +176,19 @@ public class SqlUtil<T, D> {
         if (null == entity) {
             throw new NullException();
         }
-        entity = classMapper.voTOEntity(service.queryById(id).getBody());
+        D vo = service.queryById(id).getBody();
+        if (vo == null) {
+            throw new NullException();
+        }
+        entity = classMapper.voTOEntity(vo);
         Long version = (Long) getVersion.invoke(entity, null);
-        sql += " and version = " + version;
+        sql += SqlValues.and + Value.version + Value.eq + version;
         return sql;
     }
 
     private String isDelete(String sql) {
         if (isExtends) {
-            sql += " and deleted = false";
+            sql += SqlValues.and + Value.deleted + Value.eq + Boolean.FALSE.toString();
         }
         return sql;
     }
@@ -223,7 +228,7 @@ public class SqlUtil<T, D> {
             if (findFieldNum == 0) {
                 sql += append;
             } else {
-                sql += " and ";
+                sql += SqlValues.and;
             }
             findFieldNum++;
             sql = sql + fieldName + operator;
@@ -253,66 +258,66 @@ public class SqlUtil<T, D> {
                 }
                 String order = orderEnum.getOrderBy();
                 if (orderNum == 0) {
-                    sql += " order by ";
+                    sql += SqlValues.order;
                 }
-                sql = sql + underName + " " + order;
+                sql = sql + underName + "\t" + order;
                 if (iterator.hasNext()) {
-                    sql += ",";
+                    sql += Value.comma;
                 }
                 orderNum++;
             } catch (NoSuchMethodException e) {
                 continue;
             }
         }
-        if (sql.substring(sql.length() - 1).equals(",")) {
+        if (sql.substring(sql.length() - 1).equals(Value.comma.trim())) {
             sql = sql.substring(0, sql.length() - 1);
         }
         return sql;
     }
 
     public String generateSql(SqlEnum sqlEnum, List<T> value, Long id, PageQO pageQO, Map<String, QueryEnum> condition, Map<String, OrderEnum> orderEnumMap) {
-        String sql = "";
+        String sql = new String();
         switch (sqlEnum) {
             case Insert:
                 String[] fieldAndValue = this.generateField(value);
-                sql = "insert into " + this.tableName + "(" + fieldAndValue[0] + ") " + fieldAndValue[1];
+                sql = SqlValues.insert + this.tableName + Value.left + fieldAndValue[0] + Value.right + fieldAndValue[1];
                 break;
             case DeleteFalse:
                 if (Init.version) {
                     if (isExtends) {
-                        sql = "update " + this.tableName + " set deleted = true , version = version + 1 , updated_at = \'" + TimeUtil.Now() + "\' where " + idName + " = " + id;
+                        sql = SqlValues.update + this.tableName + SqlValues.set + Value.deleted + Value.eq + Boolean.TRUE.toString() + Value.comma + Value.version + Value.eq + Value.version + " + 1" + Value.comma + Value.updated_at + Value.eq + "\'" + TimeUtil.Now() + "\' " + SqlValues.where + idName + Value.eq + id;
                         sql = updateVersion(sql, id, value.get(0));
                     } else {
                         throw new ExtendsException();
                     }
                 } else {
-                    sql = "update " + this.tableName + " set deleted = true where " + idName + " = " + id;
+                    sql = SqlValues.update + this.tableName + SqlValues.set + Value.deleted + Value.eq + Boolean.TRUE.toString() + SqlValues.where + idName + Value.eq + id;
                 }
                 sql = isDelete(sql);
                 break;
             case DeleteTrue:
-                sql = "delete from " + this.tableName + " where " + idName + " = " + id;
+                sql = SqlValues.delete + this.tableName + SqlValues.where + idName + Value.eq + id;
                 break;
             case Update:
                 if (Init.version) {
                     if (isExtends) {
-                        sql = "update " + this.tableName + " set " + this.forUpdateSql(value.get(0)) + ", version = version +1 , updated_at = \'" + TimeUtil.Now() + "\' where " + idName + " = " + id;
+                        sql = SqlValues.update + this.tableName + SqlValues.set + this.forUpdateSql(value.get(0)) +  Value.version + Value.eq + Value.version + " +1" + Value.comma + Value.updated_at + Value.eq + "\'" + TimeUtil.Now() + "\' " + SqlValues.where + idName + Value.eq + id;
                         sql = updateVersion(sql, id, value.get(0));
                     } else {
                         throw new ExtendsException();
                     }
                 } else {
-                    sql = "update " + this.tableName + " set " + this.forUpdateSql(value.get(0)) + " where " + idName + " = " + id;
+                    sql = SqlValues.update + this.tableName + SqlValues.set + this.forUpdateSql(value.get(0)) + SqlValues.where + idName + Value.eq + id;
                 }
                 sql = isDelete(sql);
                 break;
             case SelectPage:
                 Long begin = (pageQO.getCurrent() - 1L) * pageQO.getPageSize();
-                sql = "select * from " + this.tableName;
-                String append = " where ";
+                sql = SqlValues.query + Value.all + SqlValues.from + this.tableName;
+                String append = SqlValues.where;
                 if (isExtends) {
-                    sql += " where deleted = false";
-                    append = " and ";
+                    sql += SqlValues.where + Value.deleted + Value.eq + Boolean.FALSE.toString();
+                    append = SqlValues.and;
                 }
                 if (condition != null && value != null && value.size() > 0) {
                     sql = appendCondition(sql, value.get(0), condition, append);
@@ -320,44 +325,44 @@ public class SqlUtil<T, D> {
                 if (orderEnumMap != null && orderEnumMap.entrySet().size() > 0) {
                     sql = orderBy(sql, orderEnumMap);
                 }
-                sql += " limit " + begin + "," + pageQO.getPageSize();
+                sql += SqlValues.limit + begin + Value.comma + pageQO.getPageSize();
                 break;
             case SelectById:
-                sql = "select * from " + this.tableName + " where " + idName + " = " + id;
+                sql = SqlValues.query + Value.all + SqlValues.from + this.tableName + SqlValues.where + idName + Value.eq + id;
                 sql = isDelete(sql);
                 break;
             case Disable:
                 if (Init.version) {
                     if (isExtends) {
-                        sql = "update " + this.tableName + " set enable = false,version = version + 1 , updated_at = \'" + TimeUtil.Now() + "\' where " + idName + " = " + id;
+                        sql = SqlValues.update + this.tableName + SqlValues.set + Value.enable + Value.eq + Boolean.FALSE.toString() + Value.comma + Value.version + Value.eq + Value.version + " + 1" + Value.comma + Value.updated_at + Value.eq + "\'" + TimeUtil.Now() + "\' " + SqlValues.where + idName + Value.eq + id;
                         sql = updateVersion(sql, id, value.get(0));
                     } else {
                         throw new ExtendsException();
                     }
                 } else {
-                    sql = "update " + this.tableName + " set enable = false where " + idName + " = " + id;
+                    sql = SqlValues.update + this.tableName + SqlValues.set + Value.enable + Value.eq + Boolean.FALSE.toString() + SqlValues.where + idName + Value.eq + id;
                 }
                 sql = isDelete(sql);
                 break;
             case Enable:
                 if (Init.version) {
                     if (isExtends) {
-                        sql = "update " + this.tableName + " set enable = true,version = version + 1 , updated_at = \'" + TimeUtil.Now() + "\' where " + idName + " = " + id;
+                        sql = SqlValues.update + this.tableName + SqlValues.set + Value.enable + Value.eq + Boolean.TRUE.toString() + Value.comma + Value.version + Value.eq + Value.version + " + 1" + Value.comma + Value.updated_at + Value.eq + "\'" + TimeUtil.Now() + "\'" + SqlValues.where + idName + Value.eq + id;
                         sql = updateVersion(sql, id, value.get(0));
                     } else {
                         throw new ExtendsException();
                     }
                 } else {
-                    sql = "update " + this.tableName + " set enable = true where " + idName + " = " + id;
+                    sql = SqlValues.update + this.tableName + SqlValues.set + Value.version + Value.eq + Boolean.TRUE.toString() + SqlValues.where + idName + Value.eq + id;
                 }
                 sql = isDelete(sql);
                 break;
             case Count:
-                sql = "select count(1) from " + this.tableName;
-                append = " where ";
+                sql = SqlValues.query + SqlValues.count + SqlValues.from + this.tableName;
+                append = SqlValues.where;
                 if (isExtends) {
-                    sql += " where deleted = false";
-                    append = " and ";
+                    sql += SqlValues.where + Value.deleted + Value.eq + Boolean.FALSE.toString();
+                    append = SqlValues.and;
                 }
                 if (condition != null && value != null && value.size() > 0) {
                     sql = appendCondition(sql, value.get(0), condition, append);
@@ -365,10 +370,10 @@ public class SqlUtil<T, D> {
                 break;
             case BatchSave:
                 fieldAndValue = this.generateField(value);
-                sql = "insert into " + this.tableName + "(" + fieldAndValue[0] + ") " + fieldAndValue[1];
+                sql = SqlValues.insert + this.tableName + Value.left + fieldAndValue[0] + Value.right + fieldAndValue[1];
                 break;
         }
-        log.info("Simple-Data : " + sql);
+        log.info(Value.simple + sql);
         return sql;
     }
 }

@@ -1,6 +1,7 @@
 package com.simpledata.frame.base.exceptions.derive;
 
 import com.simpledata.frame.base.exceptions.SimpleException;
+import com.simpledata.frame.base.values.Value;
 import org.springframework.http.HttpStatus;
 
 public class IdException extends SimpleException {
@@ -9,6 +10,6 @@ public class IdException extends SimpleException {
     }
 
     public IdException() {
-        super(HttpStatus.BAD_REQUEST, "Simple-Data : id不能为空");
+        super(HttpStatus.BAD_REQUEST, Value.simple + "id不能为空");
     }
 }

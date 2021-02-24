@@ -19,6 +19,10 @@ import java.util.Map;
 
 public class ClassUtil {
 
+    private static final String continueStr = "continue";
+
+    private static final String init = "init";
+
     public static boolean loop(File folder, String packageName) {
         File[] files = folder.listFiles();
         for (int fileIndex = 0; fileIndex < files.length; fileIndex++) {
@@ -27,10 +31,10 @@ public class ClassUtil {
                 loop(file, packageName + file.getName() + ".");
             } else {
                 Map<String, Boolean> result = listMethodNames(file.getName(), packageName);
-                if (result.get("continue")) {
+                if (result.get(continueStr)) {
                     continue;
                 }
-                throw new LoopException(result.get("init"));
+                throw new LoopException(result.get(init));
             }
         }
         return false;
@@ -54,15 +58,15 @@ public class ClassUtil {
                 if (aClass.isAnnotationPresent(EnableLog.class)) {
                     Init.isLog = true;
                 }
-                result.put("continue", false);
-                result.put("init", aClass.getAnnotation(EnableSimpleData.class).initClass());
+                result.put(continueStr, false);
+                result.put(init, aClass.getAnnotation(EnableSimpleData.class).initClass());
                 return result;
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        result.put("continue", true);
-        result.put("init", false);
+        result.put(continueStr, true);
+        result.put(init, false);
         return result;
     }
 }
