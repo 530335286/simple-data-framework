@@ -122,6 +122,9 @@ public class SqlUtil<T, D> {
                 if (!fieldName.equalsIgnoreCase(idName)) {
                     Method method = methods[i];
                     Object obj = method.invoke(value, null);
+                    if (fieldName.equalsIgnoreCase(Value.createdAt) || fieldName.equalsIgnoreCase(Value.updatedAt)) {
+                        obj = TimeUtil.Now();
+                    }
                     if (j == 0) {
                         fieldName = humpToUnderline(fieldName);
                         fieldLine = fieldLine + fieldName + ",";
