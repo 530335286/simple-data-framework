@@ -1,9 +1,5 @@
 package com.simpledata.frame.base.entity.qo;
 
-import com.simpledata.frame.base.enums.OrderEnum;
-
-import java.util.Map;
-
 /***
  * simple-data
  * @author zcw
